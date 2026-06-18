@@ -1,60 +1,107 @@
-// src/pages/ProductsPage.jsx
-import { useEffect, useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { db } from "../firebase";
 import { collection, getDocs } from "firebase/firestore";
-import { Link } from "react-router-dom";
+import PageLayout from "../components/ui/PageLayout";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
+import EmptyState from "../components/ui/EmptyState";
+import ProductCatalogCard from "../components/products/ProductCatalogCard";
+import ProductFiltersSidebar from "../components/products/ProductFiltersSidebar";
+import Pagination from "../components/ui/Pagination";
+import FloatingShapes from "../components/ui/FloatingShapes";
+import PromoCarousel from "../components/promo/PromoCarousel";
+import PageMeta from "../components/seo/PageMeta";
+import { useLocale } from "../hooks/useLocale";
+import { useProductFilters } from "../hooks/useProductFilters";
 
 export default function ProductsPage() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [addedToast, setAddedToast] = useState(false);
+    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const { t } = useLocale();
+
+    const { filters, paginated, totalPages, page, applyFilters } = useProductFilters(products);
 
     useEffect(() => {
         (async () => {
-            const snapshot = await getDocs(collection(db, "products"));
-            const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-            setProducts(data);
-            setLoading(false);
+            try {
+                const snapshot = await getDocs(collection(db, "products"));
+                setProducts(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+            } finally {
+                setLoading(false);
+            }
         })();
     }, []);
 
+    const countries = useMemo(() => {
+        const set = new Set(products.map((p) => p.countryOfOrigin).filter(Boolean));
+        return [...set].sort();
+    }, [products]);
+
+    const showAdded = () => {
+        setAddedToast(true);
+        setTimeout(() => setAddedToast(false), 2000);
+    };
+
+    const onPageChange = (p) => {
+        const next = new URLSearchParams(searchParams);
+        next.set("page", String(p));
+        setSearchParams(next);
+    };
+
     return (
-        <section className="py-20" dir="rtl">
-            <div className="max-w-7xl mx-auto px-6">
-                <h1 className="text-4xl font-bold text-center text-gold mb-12">منتجاتنا</h1>
+        <div>
+            <PageMeta titleKey="shop.storeTitle" descriptionKey="seo.defaultDescription" />
+            <section className="relative py-20 mesh-bg overflow-hidden">
+                <FloatingShapes />
+                <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
+                    <h1 className="text-4xl md:text-5xl font-extrabold text-3d text-dark mb-4">
+                        {t("shop.storeTitle")}
+                    </h1>
+                    <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-6">
+                        {t("shop.storeSubtitle")}
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => navigate("/cart")}
+                        className="inline-block bg-gold text-black px-8 py-3 rounded-btn font-bold btn-glow"
+                    >
+                        {t("shop.viewCart")}
+                    </button>
+                </div>
+            </section>
 
-                {loading ? (
-                    <p className="text-center text-gray-600">جار التحميل…</p>
-                ) : products.length === 0 ? (
-                    <p className="text-center text-gray-600">لا توجد منتجات حالياً.</p>
-                ) : (
-                    <div className="grid md:grid-cols-3 gap-10">
-                        {products.map((p) => (
-                            <div
-                                key={p.id}
-                                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition"
-                            >
-                                {p.imageUrl && (
-                                    <img src={p.imageUrl} className="w-full h-56 object-cover" alt={p.title} />
-                                )}
+            <PromoCarousel placement="products_top" className="mesh-bg" />
 
-                                <div className="p-5">
-                                    <h2 className="text-xl font-bold mb-2">{p.title}</h2>
-                                    <p className="text-gray-600 line-clamp-2">{p.description}</p>
-
-                                    <p className="text-gold font-bold mt-3">{p.price} جنيه</p>
-
-                                    <Link
-                                        to={`/product/${p.id}`}
-                                        className="block bg-gold text-center py-2 mt-4 rounded font-bold"
-                                    >
-                                        عرض التفاصيل
-                                    </Link>
+            <PageLayout className="!py-12">
+                <div className="grid lg:grid-cols-[280px_1fr] gap-8">
+                    <ProductFiltersSidebar filters={filters} applyFilters={applyFilters} countries={countries} />
+                    <div>
+                        {loading ? (
+                            <LoadingSpinner message={t("shop.loadingProducts")} />
+                        ) : paginated.length === 0 ? (
+                            <EmptyState message={t("shop.emptyCategory")} />
+                        ) : (
+                            <>
+                                <div className="grid sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
+                                    {paginated.map((p) => (
+                                        <ProductCatalogCard key={p.id} product={p} onAddToCart={showAdded} />
+                                    ))}
                                 </div>
-                            </div>
-                        ))}
+                                <Pagination page={page} totalPages={totalPages} onPageChange={onPageChange} />
+                            </>
+                        )}
                     </div>
-                )}
-            </div>
-        </section>
+                </div>
+            </PageLayout>
+
+            {addedToast && (
+                <div role="status" className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 glass-toast text-white px-6 py-3 rounded-btn shadow-glow">
+                    {t("common.addedToCart")}
+                </div>
+            )}
+        </div>
     );
 }

@@ -11,51 +11,37 @@ import {
     query,
     orderBy,
 } from "firebase/firestore";
-
-// اختياري: صورة افتراضية لو المنتج بدون صورة
-const PLACEHOLDER =
-    "https://via.placeholder.com/800x400?text=%D8%A8%D8%AF%D9%88%D9%86+%D8%B5%D9%88%D8%B1%D8%A9";
-
-// ✅ دالة رفع الصورة على Imgbb
-async function uploadImageToImgbb(file) {
-    const apiKey = "8db50b841379d1a0048725467724bf21"; // API KEY من Imgbb
-
-    const form = new FormData();
-    form.append("image", file);
-
-    const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-        method: "POST",
-        body: form,
-    });
-
-    const data = await res.json();
-
-    if (!data.success) {
-        console.error("Imgbb error:", data);
-        throw new Error("فشل رفع الصورة على Imgbb");
-    }
-
-    // رابط الصورة النهائي
-    return data.data.url;
-}
+import { CATEGORY_IDS, getProductImage, isOnSale, getCategoryLabel } from "../data/productDefaults";
+import { uploadImageToImgbb } from "../utils/upload";
+import { useLocale } from "../hooks/useLocale";
 
 export default function AdminProducts() {
+    const { t, dir } = useLocale();
     const [products, setProducts] = useState([]);
     const [editProduct, setEditProduct] = useState(null);
-
-    // نموذج
     const [title, setTitle] = useState("");
     const [price, setPrice] = useState("");
+    const [salePrice, setSalePrice] = useState("");
+    const [promoEndsAt, setPromoEndsAt] = useState("");
     const [desc, setDesc] = useState("");
+    const [category, setCategory] = useState("panels");
+    const [featured, setFeatured] = useState(false);
+    const [brand, setBrand] = useState("");
+    const [model, setModel] = useState("");
+    const [requestPrice, setRequestPrice] = useState("");
+    const [stock, setStock] = useState("");
+    const [soldOut, setSoldOut] = useState(false);
+    const [powerKw, setPowerKw] = useState("");
+    const [powerKva, setPowerKva] = useState("");
+    const [loadType, setLoadType] = useState("");
+    const [countryOfOrigin, setCountryOfOrigin] = useState("");
     const [imageFile, setImageFile] = useState(null);
     const [uploading, setUploading] = useState(false);
 
-    // ليف ستريم للمنتجات
     useEffect(() => {
         const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
         const unsub = onSnapshot(q, (snap) => {
-            const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-            setProducts(data);
+            setProducts(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
         });
         return () => unsub();
     }, []);
@@ -64,7 +50,20 @@ export default function AdminProducts() {
         setEditProduct(null);
         setTitle("");
         setPrice("");
+        setSalePrice("");
+        setPromoEndsAt("");
         setDesc("");
+        setCategory("panels");
+        setFeatured(false);
+        setBrand("");
+        setModel("");
+        setRequestPrice("");
+        setStock("");
+        setSoldOut(false);
+        setPowerKw("");
+        setPowerKva("");
+        setLoadType("");
+        setCountryOfOrigin("");
         setImageFile(null);
         setUploading(false);
     };
@@ -73,7 +72,20 @@ export default function AdminProducts() {
         setEditProduct(p);
         setTitle(p.title || "");
         setPrice(String(p.price ?? ""));
+        setSalePrice(p.salePrice != null ? String(p.salePrice) : "");
+        setPromoEndsAt(p.promoEndsAt ? formatDateInput(p.promoEndsAt) : "");
         setDesc(p.description || "");
+        setCategory(p.category || "panels");
+        setFeatured(!!p.featured);
+        setBrand(p.brand || "");
+        setModel(p.model || "");
+        setRequestPrice(p.requestPrice != null ? String(p.requestPrice) : "");
+        setStock(p.stock != null ? String(p.stock) : "");
+        setSoldOut(!!p.soldOut);
+        setPowerKw(p.powerKw != null ? String(p.powerKw) : "");
+        setPowerKva(p.powerKva != null ? String(p.powerKva) : "");
+        setLoadType(p.loadType || "");
+        setCountryOfOrigin(p.countryOfOrigin || "");
         setImageFile(null);
     };
 
@@ -82,63 +94,72 @@ export default function AdminProducts() {
         setUploading(true);
 
         try {
-            // ✳️ لو في صورة جديدة ارفعها على Imgbb
             let imageUrl = editProduct?.imageUrl || "";
             if (imageFile) {
                 imageUrl = await uploadImageToImgbb(imageFile);
             }
 
+            const payload = {
+                title: title.trim(),
+                price: Number(price) || 0,
+                description: desc.trim(),
+                category,
+                featured,
+                imageUrl: imageUrl || editProduct?.imageUrl || "",
+                salePrice: salePrice ? Number(salePrice) : null,
+                promoEndsAt: promoEndsAt ? new Date(promoEndsAt) : null,
+                brand: brand.trim(),
+                model: model.trim(),
+                requestPrice: requestPrice !== "" ? Number(requestPrice) : null,
+                stock: stock !== "" ? Number(stock) : null,
+                soldOut,
+                powerKw: powerKw !== "" ? Number(powerKw) : null,
+                powerKva: powerKva !== "" ? Number(powerKva) : null,
+                loadType: loadType || null,
+                countryOfOrigin: countryOfOrigin.trim(),
+            };
+
             if (editProduct) {
-                // تعديل
-                const payload = {
-                    title: title.trim(),
-                    price: Number(price) || 0,
-                    description: desc.trim(),
-                    imageUrl: imageUrl || editProduct.imageUrl || "",
+                await updateDoc(doc(db, "products", editProduct.id), {
+                    ...payload,
                     updatedAt: serverTimestamp(),
-                };
-                await updateDoc(doc(db, "products", editProduct.id), payload);
+                });
             } else {
-                // إضافة
-                const payload = {
-                    title: title.trim(),
-                    price: Number(price) || 0,
-                    description: desc.trim(),
+                await addDoc(collection(db, "products"), {
+                    ...payload,
                     imageUrl: imageUrl || "",
                     createdAt: serverTimestamp(),
-                };
-                await addDoc(collection(db, "products"), payload);
+                });
             }
 
             resetForm();
         } catch (err) {
             console.error(err);
-            alert("❌ حصل خطأ أثناء الحفظ / رفع الصورة.");
+            alert(t("admin.saveError"));
             setUploading(false);
         }
     };
 
     const deleteProduct = async (id) => {
-        if (!confirm("هل تريد حذف هذا المنتج؟")) return;
+        if (!confirm(t("admin.confirmDeleteProduct"))) return;
         await deleteDoc(doc(db, "products", id));
     };
 
     return (
-        <div className="p-6" dir="rtl">
-            <h1 className="text-3xl font-bold text-gold mb-6">إدارة المنتجات</h1>
+        <div className="p-6" dir={dir}>
+            <h1 className="text-3xl font-bold text-gold mb-6">{t("admin.productsManage")}</h1>
 
-            {/* فورم إضافة/تعديل */}
             <form
                 onSubmit={handleSave}
                 className="bg-white p-6 rounded-xl shadow-lg mb-10 space-y-3 max-w-sm ml-auto"
             >
                 <h2 className="text-xl font-bold mb-2">
-                    {editProduct ? "تعديل المنتج" : "إضافة منتج جديد"}
+                    {editProduct ? t("admin.editProduct") : t("admin.addProduct")}
                 </h2>
 
                 <input
                     type="text"
-                    placeholder="اسم المنتج"
+                    placeholder={t("admin.productName")}
                     className="w-full p-3 border rounded"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
@@ -146,16 +167,126 @@ export default function AdminProducts() {
                 />
 
                 <input
+                    type="text"
+                    placeholder={t("admin.brand")}
+                    className="w-full p-3 border rounded"
+                    value={brand}
+                    onChange={(e) => setBrand(e.target.value)}
+                />
+
+                <input
+                    type="text"
+                    placeholder={t("admin.model")}
+                    className="w-full p-3 border rounded"
+                    value={model}
+                    onChange={(e) => setModel(e.target.value)}
+                />
+
+                <input
                     type="number"
-                    placeholder="السعر"
+                    placeholder={t("admin.price")}
                     className="w-full p-3 border rounded"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                     required
                 />
 
+                <input
+                    type="number"
+                    placeholder={t("admin.requestPrice")}
+                    className="w-full p-3 border rounded"
+                    value={requestPrice}
+                    onChange={(e) => setRequestPrice(e.target.value)}
+                />
+
+                <input
+                    type="number"
+                    placeholder={t("admin.salePrice")}
+                    className="w-full p-3 border rounded"
+                    value={salePrice}
+                    onChange={(e) => setSalePrice(e.target.value)}
+                />
+
+                <label className="block text-sm text-gray-600">
+                    {t("admin.promoEnds")}
+                    <input
+                        type="date"
+                        className="w-full p-3 border rounded mt-1"
+                        value={promoEndsAt}
+                        onChange={(e) => setPromoEndsAt(e.target.value)}
+                    />
+                </label>
+
+                <label className="block text-sm text-gray-600">
+                    {t("admin.category")}
+                    <select
+                        className="w-full p-3 border rounded mt-1"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                    >
+                        {CATEGORY_IDS.map((id) => (
+                            <option key={id} value={id}>{t(`categories.${id}`)}</option>
+                        ))}
+                    </select>
+                </label>
+
+                <input
+                    type="number"
+                    placeholder={t("admin.stock")}
+                    className="w-full p-3 border rounded"
+                    value={stock}
+                    onChange={(e) => setStock(e.target.value)}
+                />
+
+                <label className="flex items-center gap-2">
+                    <input type="checkbox" checked={soldOut} onChange={(e) => setSoldOut(e.target.checked)} />
+                    <span>{t("admin.soldOut")}</span>
+                </label>
+
+                <input
+                    type="number"
+                    placeholder={t("admin.powerKw")}
+                    className="w-full p-3 border rounded"
+                    value={powerKw}
+                    onChange={(e) => setPowerKw(e.target.value)}
+                />
+
+                <input
+                    type="number"
+                    placeholder={t("admin.powerKva")}
+                    className="w-full p-3 border rounded"
+                    value={powerKva}
+                    onChange={(e) => setPowerKva(e.target.value)}
+                />
+
+                <label className="block text-sm text-gray-600">
+                    {t("admin.loadType")}
+                    <select
+                        className="w-full p-3 border rounded mt-1"
+                        value={loadType}
+                        onChange={(e) => setLoadType(e.target.value)}
+                    >
+                        <option value="">{t("admin.loadTypeNone")}</option>
+                        <option value="single">{t("shop.loadSingle")}</option>
+                        <option value="three">{t("shop.loadThree")}</option>
+                    </select>
+                </label>
+
+                <input
+                    type="text"
+                    placeholder={t("admin.country")}
+                    className="w-full p-3 border rounded"
+                    value={countryOfOrigin}
+                    onChange={(e) => setCountryOfOrigin(e.target.value)}
+                />
+
+                <label className="flex items-center gap-2">
+                    <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} />
+                    <span>{t("admin.featured")}</span>
+                </label>
+
                 <textarea
-                    placeholder="الوصف"
+                    placeholder={t("admin.description")}
                     className="w-full p-3 border rounded"
                     value={desc}
                     onChange={(e) => setDesc(e.target.value)}
@@ -163,82 +294,77 @@ export default function AdminProducts() {
                     required
                 />
 
-                <input
-                    type="file"
-                    className="w-full p-2"
-                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                    accept="image/*"
-                />
+                <label className="block text-sm text-gray-600">
+                    {t("admin.image")}
+                    <input
+                        type="file"
+                        className="w-full p-2 mt-1"
+                        onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                        accept="image/*"
+                    />
+                </label>
 
                 <button
                     className="bg-gray-600 text-white w-full py-2 rounded font-bold disabled:opacity-60"
                     disabled={uploading}
-                    title={uploading ? "جار الرفع…" : ""}
                 >
-                    {uploading ? "جار الرفع والحفظ…" : "حفظ"}
+                    {uploading ? t("admin.uploadingSaving") : t("common.save")}
                 </button>
 
                 {editProduct && (
-                    <button
-                        type="button"
-                        className="w-full py-2 rounded font-bold border mt-2"
-                        onClick={resetForm}
-                    >
-                        إلغاء التعديل
+                    <button type="button" className="w-full py-2 rounded font-bold border mt-2" onClick={resetForm}>
+                        {t("admin.cancelEdit")}
                     </button>
                 )}
             </form>
 
-            {/* عرض المنتجات */}
             <div className="grid md:grid-cols-2 gap-8">
                 {products.map((p) => (
-                    <div
-                        key={p.id}
-                        className="bg-white rounded-xl shadow overflow-hidden"
-                    >
-                        <div className="h-64 bg-gray-100 flex items-center justify-center">
-                            {/* صورة أو Placeholder */}
-                            {p.imageUrl ? (
-                                <img
-                                    src={p.imageUrl}
-                                    alt={p.title}
-                                    className="w-full h-64 object-cover"
-                                />
-                            ) : (
-                                <img
-                                    src={PLACEHOLDER}
-                                    alt="no-image"
-                                    className="w-full h-64 object-cover"
-                                />
-                            )}
+                    <div key={p.id} className="bg-white rounded-xl shadow overflow-hidden">
+                        <div className="h-64 bg-gray-100 overflow-hidden">
+                            <img src={getProductImage(p)} alt={p.title} className="w-full h-64 object-cover" />
                         </div>
-
                         <div className="p-4">
                             <h3 className="text-xl font-bold">{p.title}</h3>
-                            <p className="text-gray-600">{p.description}</p>
-                            <p className="text-gold font-bold mt-2">{p.price} جنيه</p>
-
+                            <p className="text-gray-600 line-clamp-2">{p.description}</p>
+                            <p className="text-gold font-bold mt-2">
+                                {isOnSale(p) ? (
+                                    <>
+                                        <span className="line-through text-gray-400 text-sm ml-1">{p.price}</span>
+                                        {p.salePrice} {t("admin.currencyShort")}
+                                    </>
+                                ) : (
+                                    <>{p.price} {t("admin.currencyShort")}</>
+                                )}
+                            </p>
+                            {p.featured && (
+                                <span className="text-xs bg-gold/20 text-gold px-2 py-1 rounded ml-1">
+                                    {t("admin.featuredBadge")}
+                                </span>
+                            )}
+                            {p.category && (
+                                <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                                    {getCategoryLabel(p.category, t)}
+                                </span>
+                            )}
                             <div className="flex justify-between mt-3">
-                                <button
-                                    onClick={() => startEdit(p)}
-                                    className="bg-blue-500 text-white px-3 py-1 rounded"
-                                >
-                                    تعديل
+                                <button onClick={() => startEdit(p)} className="bg-blue-500 text-white px-3 py-1 rounded">
+                                    {t("common.edit")}
                                 </button>
-                                <button
-                                    onClick={() => deleteProduct(p.id)}
-                                    className="bg-red-500 text-white px-3 py-1 rounded"
-                                >
-                                    حذف
+                                <button onClick={() => deleteProduct(p.id)} className="bg-red-500 text-white px-3 py-1 rounded">
+                                    {t("common.delete")}
                                 </button>
                             </div>
                         </div>
                     </div>
                 ))}
-                {products.length === 0 && (
-                    <p className="text-gray-600">لا توجد منتجات حالياً.</p>
-                )}
+                {products.length === 0 && <p className="text-gray-600">{t("admin.noProducts")}</p>}
             </div>
         </div>
     );
+}
+
+function formatDateInput(ts) {
+    const d = ts?.toDate?.() ?? new Date(ts);
+    return d.toISOString().slice(0, 10);
 }

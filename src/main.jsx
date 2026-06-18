@@ -2,14 +2,22 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from "react-router-dom";
 import App from './App.jsx';
+import { CartProvider } from './context/CartContext.jsx';
+import { LocaleProvider } from './context/LocaleContext.jsx';
+import { AuthProvider } from './context/AuthContext.jsx';
 import './index.css';
+import './styles/3d.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
         <BrowserRouter>
-            <div className="font-arabic">
-                <App />
-            </div>
+            <LocaleProvider>
+                <AuthProvider>
+                    <CartProvider>
+                        <App />
+                    </CartProvider>
+                </AuthProvider>
+            </LocaleProvider>
         </BrowserRouter>
     </React.StrictMode>
 );

@@ -9,6 +9,8 @@ import AdminProjects from "./AdminProjects.jsx";
 import AdminOrders from "./AdminOrders.jsx";
 import AdminQuotes from "./AdminQuotes.jsx";
 import AdminCourses from "./AdminCourses.jsx";
+import AdminPromotions from "./AdminPromotions.jsx";
+import AdminCoupons from "./AdminCoupons.jsx";
 
 import ProtectedAdminRoute from "../components/ProtectedAdminRoute.jsx";
 
@@ -77,6 +79,30 @@ export default function AdminRoutes() {
                     <ProtectedAdminRoute>
                         <AdminLayout>
                             <AdminQuotes />
+                        </AdminLayout>
+                    </ProtectedAdminRoute>
+                }
+            />
+
+            {/* الإعلانات والعروض */}
+            <Route
+                path="promotions"
+                element={
+                    <ProtectedAdminRoute>
+                        <AdminLayout>
+                            <AdminPromotions />
+                        </AdminLayout>
+                    </ProtectedAdminRoute>
+                }
+            />
+
+            {/* أكواد الخصم */}
+            <Route
+                path="coupons"
+                element={
+                    <ProtectedAdminRoute>
+                        <AdminLayout>
+                            <AdminCoupons />
                         </AdminLayout>
                     </ProtectedAdminRoute>
                 }

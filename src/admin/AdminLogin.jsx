@@ -1,61 +1,73 @@
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
+import { isAdminUser } from "../config/admin";
+import FormField from "../components/ui/FormField";
+import Button from "../components/ui/Button";
+import { useLocale } from "../hooks/useLocale";
 
 export default function AdminLogin() {
     const [email, setEmail] = useState("");
     const [pass, setPass] = useState("");
+    const [error, setError] = useState("");
     const navigate = useNavigate();
+    const { t, dir } = useLocale();
 
     const login = async (e) => {
         e.preventDefault();
+        setError("");
 
         try {
-            await signInWithEmailAndPassword(auth, email, pass);
-
-            // 👈 هنا أهم شيء — الانتقال الصحيح
+            const credential = await signInWithEmailAndPassword(auth, email, pass);
+            if (!isAdminUser(credential.user)) {
+                await signOut(auth);
+                setError(t("admin.unauthorized"));
+                return;
+            }
             navigate("/admin/dashboard");
         } catch (err) {
-            console.log("LOGIN ERROR:", err.code);
-            alert("❌ خطأ في تسجيل الدخول: " + err.code);
+            setError(`${t("admin.loginError")}: ${err.code}`);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4" dir={dir}>
             <form
                 onSubmit={login}
-                className="bg-white p-8 rounded-xl shadow-lg w-96 space-y-4"
+                className="bg-white p-8 rounded-card shadow-card w-full max-w-md space-y-4"
             >
-                <h2 className="text-2xl font-bold text-center mb-4">
-                    تسجيل دخول الأدمن
-                </h2>
+                <h1 className="text-2xl font-bold text-center mb-4">
+                    {t("admin.loginTitle")}
+                </h1>
 
-                <input
+                <FormField
+                    label={t("admin.email")}
+                    name="email"
                     type="email"
-                    className="w-full p-3 border rounded bg-blue-50"
-                    placeholder="البريد الإلكتروني"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                 />
 
-                <input
+                <FormField
+                    label={t("admin.password")}
+                    name="password"
                     type="password"
-                    className="w-full p-3 border rounded bg-blue-50"
-                    placeholder="كلمة السر"
                     value={pass}
                     onChange={(e) => setPass(e.target.value)}
                     required
                 />
 
-                <button
-                    type="submit"
-                    className="bg-gold w-full py-2 rounded font-bold"
-                >
-                    دخول
-                </button>
+                <Button type="submit" className="w-full">
+                    {t("admin.login")}
+                </Button>
+
+                {error && (
+                    <p role="alert" className="text-red-600 text-center text-sm">
+                        {error}
+                    </p>
+                )}
             </form>
         </div>
     );

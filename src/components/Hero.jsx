@@ -1,34 +1,34 @@
+import { Link } from "react-router-dom";
 import heroImg from "../assets/hero2.jpg";
+import FloatingShapes from "./ui/FloatingShapes";
+import Button from "./ui/Button";
+import SiteImage from "./ui/SiteImage";
+import { useLocale } from "../hooks/useLocale";
 
 export default function Hero() {
+    const { t } = useLocale();
+
     return (
-        <section className="relative h-screen flex items-center justify-center text-center text-white">
+        <section className="relative min-h-screen flex items-center justify-center text-center text-white overflow-hidden perspective-scene">
+            <SiteImage src={heroImg} alt={t("home.heroImgAlt")} variant="hero" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/70" />
+            <FloatingShapes />
 
-            {/* Background Image */}
-            <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url(${heroImg})` }}
-            ></div>
-
-            {/* Dark Overlay */}
-            <div className="absolute inset-0 bg-black/40"></div>
-
-            {/* Content */}
-            <div className="relative z-10 px-4 max-w-3xl">
-                <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight drop-shadow-lg">
-                    الهواري صن للطاقة الشمسية
+            <div className="relative z-10 px-4 max-w-4xl animate-fade-up">
+                <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight text-3d">
+                    {t("home.heroTitle")}
                 </h1>
-
-                <p className="text-2xl md:text-3xl mb-10 opacity-95 drop-shadow-md">
-                    توريد – تركيب – صيانة محطات وسخانات الطاقة الشمسية
+                <p className="text-xl md:text-3xl mb-10 opacity-95 drop-shadow-md max-w-2xl mx-auto">
+                    {t("home.heroSubtitle")}
                 </p>
-
-                <a
-                    href="/quote"
-                    className="bg-gold px-10 py-4 rounded-xl text-black font-bold text-2xl shadow-xl hover:scale-105 transition duration-300"
-                >
-                    اطلب عرض سعر الآن
-                </a>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <Button as={Link} to="/quote" size="lg" className="btn-glow shadow-glow">
+                        {t("home.heroCtaQuote")}
+                    </Button>
+                    <Button as={Link} to="/products" variant="outline" size="lg" className="glass-btn-light border-white/40 text-white hover:bg-white/10">
+                        {t("home.heroCtaShop")}
+                    </Button>
+                </div>
             </div>
         </section>
     );

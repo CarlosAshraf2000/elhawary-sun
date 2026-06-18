@@ -9,10 +9,12 @@ import {
     deleteDoc,
     doc,
 } from "firebase/firestore";
+import { useLocale } from "../hooks/useLocale";
 
 export default function AdminQuotes() {
     const [quotes, setQuotes] = useState([]);
     const [filter, setFilter] = useState("all");
+    const { t, dir } = useLocale();
 
     useEffect(() => {
         const q = query(collection(db, "quotes"), orderBy("createdAt", "desc"));
@@ -28,7 +30,7 @@ export default function AdminQuotes() {
     };
 
     const deleteQuote = async (id) => {
-        if (!confirm("هل تريد حذف هذا الطلب؟")) return;
+        if (!confirm(t("admin.confirmDeleteOrder"))) return;
         await deleteDoc(doc(db, "quotes", id));
     };
 
@@ -37,54 +39,44 @@ export default function AdminQuotes() {
             ? quotes
             : quotes.filter((q) => (filter === "done" ? q.done : !q.done));
 
+    const filterLabels = {
+        all: t("admin.filterAll"),
+        new: t("admin.filterNew"),
+        done: t("admin.filterDone"),
+    };
+
     return (
-        <div className="flex-1 p-10 bg-gray-50 min-h-screen" dir="rtl">
-            <h1 className="text-3xl font-bold mb-6 text-gold">📨 طلبات عرض السعر</h1>
+        <div className="flex-1 p-10 bg-gray-50 min-h-screen" dir={dir}>
+            <h1 className="text-3xl font-bold mb-6 text-gold">📨 {t("admin.quotesPageTitle")}</h1>
 
-            {/* فلترة */}
             <div className="flex gap-3 mb-5">
-                <button
-                    onClick={() => setFilter("all")}
-                    className={`px-4 py-2 rounded-lg ${
-                        filter === "all" ? "bg-gold text-black" : "bg-white shadow"
-                    }`}
-                >
-                    الكل
-                </button>
-
-                <button
-                    onClick={() => setFilter("new")}
-                    className={`px-4 py-2 rounded-lg ${
-                        filter === "new" ? "bg-gold text-black" : "bg-white shadow"
-                    }`}
-                >
-                    الجديدة
-                </button>
-
-                <button
-                    onClick={() => setFilter("done")}
-                    className={`px-4 py-2 rounded-lg ${
-                        filter === "done" ? "bg-gold text-black" : "bg-white shadow"
-                    }`}
-                >
-                    المكتملة
-                </button>
+                {["all", "new", "done"].map((f) => (
+                    <button
+                        key={f}
+                        onClick={() => setFilter(f)}
+                        className={`px-4 py-2 rounded-lg ${
+                            filter === f ? "bg-gold text-black" : "bg-white shadow"
+                        }`}
+                    >
+                        {filterLabels[f]}
+                    </button>
+                ))}
             </div>
 
             <div className="overflow-x-auto bg-white shadow rounded-xl p-6">
                 {filtered.length === 0 ? (
-                    <p className="text-gray-600 text-center">لا توجد طلبات.</p>
+                    <p className="text-gray-600 text-center">{t("admin.noQuotes")}</p>
                 ) : (
                     <table className="w-full text-center border-collapse">
                         <thead>
                         <tr className="bg-gray-100 text-lg">
-                            <th className="p-3 border">التاريخ</th>
-                            <th className="p-3 border">الاسم</th>
-                            <th className="p-3 border">الهاتف</th>
-                            <th className="p-3 border">المحافظة</th>
-                            <th className="p-3 border">النظام المطلوب</th>
-                            <th className="p-3 border">الحالة</th>
-                            <th className="p-3 border">إجراءات</th>
+                            <th className="p-3 border">{t("admin.date")}</th>
+                            <th className="p-3 border">{t("admin.name")}</th>
+                            <th className="p-3 border">{t("admin.phone")}</th>
+                            <th className="p-3 border">{t("admin.city")}</th>
+                            <th className="p-3 border">{t("admin.systemCol")}</th>
+                            <th className="p-3 border">{t("admin.status")}</th>
+                            <th className="p-3 border">{t("admin.actions")}</th>
                         </tr>
                         </thead>
 
@@ -94,7 +86,7 @@ export default function AdminQuotes() {
                                 <td className="p-3 border">
                                     {q.createdAt?.toDate
                                         ? q.createdAt.toDate().toLocaleString()
-                                        : "—"}
+                                        : t("admin.loadTypeNone")}
                                 </td>
                                 <td className="p-3 border">{q.name}</td>
                                 <td className="p-3 border">{q.phone}</td>
@@ -103,9 +95,9 @@ export default function AdminQuotes() {
 
                                 <td className="p-3 border">
                                     {q.done ? (
-                                        <span className="text-green-600 font-bold">✔ مكتمل</span>
+                                        <span className="text-green-600 font-bold">✔ {t("admin.statusDone")}</span>
                                     ) : (
-                                        <span className="text-yellow-600">⏳ جديد</span>
+                                        <span className="text-yellow-600">⏳ {t("admin.statusNew")}</span>
                                     )}
                                 </td>
 
@@ -115,7 +107,7 @@ export default function AdminQuotes() {
                                             onClick={() => markDone(q.id)}
                                             className="bg-green-500 text-white px-3 py-1 rounded"
                                         >
-                                            تم
+                                            {t("admin.markDone")}
                                         </button>
                                     )}
 
@@ -123,7 +115,7 @@ export default function AdminQuotes() {
                                         onClick={() => deleteQuote(q.id)}
                                         className="bg-red-500 text-white px-3 py-1 rounded"
                                     >
-                                        حذف
+                                        {t("common.delete")}
                                     </button>
                                 </td>
                             </tr>

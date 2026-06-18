@@ -1,55 +1,106 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation as useRouterLocation, useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
+import { useLocale } from "../hooks/useLocale";
 
-export default function AdminSidebar() {
-    const { pathname } = useLocation();
+const navItems = [
+    { to: "/admin/dashboard", labelKey: "admin.dashboard" },
+    { to: "/admin/orders", labelKey: "admin.orders" },
+    { to: "/admin/quotes", labelKey: "admin.quotes" },
+    { to: "/admin/products", labelKey: "admin.products" },
+    { to: "/admin/promotions", labelKey: "admin.promotions" },
+    { to: "/admin/coupons", labelKey: "admin.coupons" },
+    { to: "/admin/projects", labelKey: "admin.projects" },
+    { to: "/admin/courses", labelKey: "admin.courses" },
+];
+
+export default function AdminSidebar({ open = false, onClose, onNavigate }) {
+    const { pathname } = useRouterLocation();
+    const navigate = useNavigate();
+    const { t, lang, setLang, dir } = useLocale();
+
+    const handleLogout = async () => {
+        await signOut(auth);
+        onClose?.();
+        onNavigate?.();
+        navigate("/admin/login");
+    };
 
     const linkClass = (path) =>
-        `block py-3 px-5 rounded-lg text-lg font-semibold transition ${
+        `block py-3 px-5 rounded-lg text-lg font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
             pathname === path
                 ? "bg-gold text-black"
                 : "text-gray-700 hover:bg-gray-200"
         }`;
 
+    const langBtnClass = (active) =>
+        `flex-1 py-2 rounded-lg text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+            active ? "bg-gold text-black" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+        }`;
+
     return (
         <aside
-            className="w-64 bg-white shadow-lg h-screen fixed top-0 right-0 p-6"
-            dir="rtl"
+            className={`w-64 max-w-[85vw] bg-white shadow-lg h-screen fixed top-0 right-0 p-6 z-40 transform transition-transform duration-300 ${
+                open ? "translate-x-0" : "translate-x-full"
+            } md:translate-x-0`}
+            dir={dir}
+            aria-label={t("admin.sidebarLabel")}
         >
-            <h2 className="text-2xl font-bold text-gold mb-8">لوحة التحكم</h2>
+            <div className="flex items-center justify-between mb-8 md:block">
+                <h2 className="text-2xl font-bold text-gold">{t("admin.panelTitle")}</h2>
+                <button
+                    type="button"
+                    className="md:hidden text-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold rounded"
+                    onClick={onClose}
+                    aria-label={t("nav.closeMenu")}
+                >
+                    ✕
+                </button>
+            </div>
 
             <nav className="flex flex-col gap-3">
+                {navItems.map((item) => (
+                    <Link
+                        key={item.to}
+                        className={linkClass(item.to)}
+                        to={item.to}
+                        onClick={onClose}
+                    >
+                        {t(item.labelKey)}
+                    </Link>
+                ))}
 
-                <Link className={linkClass("/admin/dashboard")} to="/admin/dashboard">
-                    الرئيسية
-                </Link>
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                    <p className="text-xs font-bold text-gray-500 mb-2 px-5">{t("settings.language")}</p>
+                    <div className="flex gap-2 px-5">
+                        <button
+                            type="button"
+                            className={langBtnClass(lang === "ar")}
+                            onClick={() => setLang("ar")}
+                            aria-pressed={lang === "ar"}
+                            aria-label={t("common.langAr")}
+                        >
+                            AR
+                        </button>
+                        <button
+                            type="button"
+                            className={langBtnClass(lang === "en")}
+                            onClick={() => setLang("en")}
+                            aria-pressed={lang === "en"}
+                            aria-label={t("common.langEn")}
+                        >
+                            EN
+                        </button>
+                    </div>
+                </div>
 
-                <Link className={linkClass("/admin/orders")} to="/admin/orders">
-                    الطلبات
-                </Link>
-
-                <Link className={linkClass("/admin/quotes")} to="/admin/quotes">
-                    عروض السعر
-                </Link>
-
-                <Link className={linkClass("/admin/products")} to="/admin/products">
-                    المنتجات
-                </Link>
-
-                <Link className={linkClass("/admin/projects")} to="/admin/projects">
-                    المشاريع
-                </Link>
-
-                {/* ⭐ زر الكورسات التعليمية الجديد */}
-                <Link className={linkClass("/admin/courses")} to="/admin/courses">
-                    الكورسات التعليمية
-                </Link>
-
-                <Link
-                    className="mt-10 text-red-500 font-bold"
-                    to="/admin/logout"
+                <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="mt-6 text-red-500 font-bold text-right w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 rounded px-5 py-3"
                 >
-                    تسجيل الخروج
-                </Link>
+                    {t("admin.logout")}
+                </button>
             </nav>
         </aside>
     );

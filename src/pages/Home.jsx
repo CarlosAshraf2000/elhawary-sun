@@ -1,15 +1,21 @@
-import Navbar from "../components/Navbar.jsx";
 import Hero from "../components/Hero.jsx";
 import Services from "../components/Services.jsx";
+import StatsBar, { WhyChooseUs, Testimonials, CTABanner } from "../components/home/StatsBar.jsx";
+import FeaturedProjects from "../components/home/FeaturedProjects.jsx";
+import PromoCarousel from "../components/promo/PromoCarousel.jsx";
 
 export default function Home() {
     return (
         <>
-            <Navbar />
-            <div className="pt-20">
-                <Hero />
-                <Services />
-            </div>
+            <Hero />
+            <PromoCarousel placement="home_hero" />
+            <Services />
+            <StatsBar />
+            <WhyChooseUs />
+            <PromoCarousel placement="home_mid" />
+            <FeaturedProjects />
+            <Testimonials />
+            <CTABanner />
         </>
     );
 }

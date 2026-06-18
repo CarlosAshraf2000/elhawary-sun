@@ -9,17 +9,18 @@ import {
     orderBy,
     query
 } from "firebase/firestore";
-import {uploadFile} from "../../utils/upload.js";
-
+import { uploadImageToImgbb } from "../utils/upload.js";
+import { useLocale } from "../hooks/useLocale";
 
 export default function AdminCourses() {
+    const { t, dir } = useLocale();
     const [title, setTitle] = useState("");
     const [desc, setDesc] = useState("");
-    const [image, setImage] = useState("");
-    const [pdf, setPDF] = useState("");
+    const [imageFile, setImageFile] = useState(null);
+    const [pdfFile, setPdfFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
     const [courses, setCourses] = useState([]);
 
-    // ------------- تحميل الكورسات -------------
     useEffect(() => {
         const q = query(collection(db, "courses"), orderBy("createdAt", "desc"));
         const unsub = onSnapshot(q, (snap) => {
@@ -29,115 +30,105 @@ export default function AdminCourses() {
         return () => unsub();
     }, []);
 
-    // ------------- رفع صورة الغلاف -------------
-    const handleUploadImage = async () => {
-        const url = await uploadFile();
-        if (!url) {
-            alert("لم يتم اختيار صورة");
-            return;
-        }
-        setImage(url);
-    };
-
-    // ------------- رفع PDF -------------
-    const handleUploadPDF = async () => {
-        const url = await uploadFile();
-        if (!url) {
-            alert("لم يتم اختيار ملف PDF");
-            return;
-        }
-        setPDF(url);
-    };
-
-    // ------------- إضافة كورس -------------
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!title || !desc || !image || !pdf) {
-            return alert("⚠️ يرجى إدخال جميع البيانات ورفع الملفات");
+        if (!title || !desc || !imageFile || !pdfFile) {
+            return alert(t("admin.fillAllCourseData"));
         }
 
-        await addDoc(collection(db, "courses"), {
-            title,
-            description: desc,
-            imageURL: image,
-            pdfURL: pdf,
-            createdAt: new Date()
-        });
+        setUploading(true);
+        try {
+            const imageURL = await uploadImageToImgbb(imageFile);
+            const pdfURL = await uploadImageToImgbb(pdfFile);
 
-        setTitle("");
-        setDesc("");
-        setImage("");
-        setPDF("");
+            await addDoc(collection(db, "courses"), {
+                title,
+                description: desc,
+                imageURL,
+                pdfURL,
+                createdAt: new Date()
+            });
 
-        alert("✅ تم رفع الكورس بنجاح");
+            setTitle("");
+            setDesc("");
+            setImageFile(null);
+            setPdfFile(null);
+
+            alert(t("admin.courseAdded"));
+        } catch (err) {
+            console.error(err);
+            alert(t("admin.saveError"));
+        } finally {
+            setUploading(false);
+        }
     };
 
-    // ------------- حذف كورس -------------
     const deleteCourse = async (id) => {
-        if (!confirm("هل تريد حذف هذا الكورس؟")) return;
+        if (!confirm(t("admin.confirmDeleteCourse"))) return;
         await deleteDoc(doc(db, "courses", id));
     };
 
     return (
-        <div className="flex-1 p-10" dir="rtl">
-            <h1 className="text-3xl font-bold text-gold mb-6">📚 إدارة الكورسات</h1>
+        <div className="flex-1 p-10" dir={dir}>
+            <h1 className="text-3xl font-bold text-gold mb-6">📚 {t("admin.coursesManage")}</h1>
 
-            {/* ===== نموذج الإضافة ===== */}
             <form
                 onSubmit={handleSubmit}
                 className="bg-white p-6 rounded-xl shadow-md space-y-4 max-w-xl"
             >
                 <input
                     type="text"
-                    placeholder="عنوان الكورس"
+                    placeholder={t("admin.courseTitle")}
                     className="w-full border p-3 rounded"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                 />
 
                 <textarea
-                    placeholder="وصف الكورس"
+                    placeholder={t("admin.courseDesc")}
                     className="w-full border p-3 rounded"
                     value={desc}
                     onChange={(e) => setDesc(e.target.value)}
                 />
 
-                {/* زر رفع صورة */}
-                <button
-                    type="button"
-                    onClick={handleUploadImage}
-                    className="bg-blue-600 text-white px-4 py-2 rounded"
-                >
-                    رفع صورة الغلاف
-                </button>
-                {image && <p className="text-green-600">✔ تم رفع الصورة</p>}
+                <label className="block text-sm text-gray-600">
+                    {t("admin.uploadCover")}
+                    <input
+                        type="file"
+                        accept="image/*"
+                        className="w-full border p-2 rounded mt-1"
+                        onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                    />
+                </label>
+                {imageFile && <p className="text-green-600">✔ {t("admin.imageUploaded")}</p>}
 
-                {/* زر رفع PDF */}
-                <button
-                    type="button"
-                    onClick={handleUploadPDF}
-                    className="bg-purple-600 text-white px-4 py-2 rounded"
-                >
-                    رفع ملف PDF
-                </button>
-                {pdf && <p className="text-green-600">✔ تم رفع ملف PDF</p>}
+                <label className="block text-sm text-gray-600">
+                    {t("admin.uploadPdf")}
+                    <input
+                        type="file"
+                        accept="application/pdf,image/*"
+                        className="w-full border p-2 rounded mt-1"
+                        onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+                    />
+                </label>
+                {pdfFile && <p className="text-green-600">✔ {t("admin.pdfUploaded")}</p>}
 
-                <button className="bg-gold px-6 py-3 rounded font-bold w-full">
-                    إضافة الكورس
+                <button className="bg-gold px-6 py-3 rounded font-bold w-full disabled:opacity-60" disabled={uploading}>
+                    {uploading ? t("admin.uploading") : t("admin.addCourse")}
                 </button>
             </form>
 
             <hr className="my-10" />
 
-            {/* ===== عرض الكورسات ===== */}
-            <h2 className="text-2xl font-bold mb-4">📘 الكورسات الحالية</h2>
+            <h2 className="text-2xl font-bold mb-4">📘 {t("admin.currentCourses")}</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {courses.map((c) => (
                     <div key={c.id} className="bg-white shadow p-4 rounded-xl">
                         <img
                             src={c.imageURL}
+                            alt={c.title}
                             className="w-full h-40 object-cover rounded"
                         />
 
@@ -146,16 +137,17 @@ export default function AdminCourses() {
                         <a
                             href={c.pdfURL}
                             target="_blank"
+                            rel="noreferrer"
                             className="text-blue-600 underline block mt-2"
                         >
-                            تحميل PDF
+                            {t("admin.downloadPdf")}
                         </a>
 
                         <button
                             onClick={() => deleteCourse(c.id)}
                             className="mt-3 bg-red-500 text-white px-3 py-1 rounded"
                         >
-                            حذف
+                            {t("common.delete")}
                         </button>
                     </div>
                 ))}
