@@ -1,11 +1,11 @@
 import { useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import WhatsAppFloat from "./components/WhatsAppFloat";
 import RoutePageMeta from "./components/seo/RoutePageMeta";
-import AppRouter from "./router/AppRouter";
+import ErrorBoundary from "./components/ui/ErrorBoundary";
 import { useLocale } from "./hooks/useLocale";
 
 export default function App() {
@@ -34,21 +34,28 @@ export default function App() {
         return () => window.removeEventListener("keydown", handler);
     }, [navigate, t]);
 
+    if (isAdminPage) {
+        return (
+            <ErrorBoundary>
+                <RoutePageMeta />
+                <Outlet />
+            </ErrorBoundary>
+        );
+    }
+
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen dark:bg-surface">
             <RoutePageMeta />
             <Navbar />
 
-            <main className={`flex-grow ${isAdminPage ? "" : "pt-20"}`}>
-                <AppRouter />
+            <main className="flex-grow pt-20">
+                <ErrorBoundary>
+                    <Outlet />
+                </ErrorBoundary>
             </main>
 
-            {!isAdminPage && (
-                <>
-                    <Footer />
-                    <WhatsAppFloat />
-                </>
-            )}
+            <Footer />
+            <WhatsAppFloat />
         </div>
     );
 }

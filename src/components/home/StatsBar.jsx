@@ -59,7 +59,7 @@ export function Testimonials() {
     const testimonials = getLocaleData(lang).home.testimonials;
 
     return (
-        <section className="py-20 bg-gray-50">
+        <section className="py-20 mesh-bg dark:bg-surface">
             <div className="max-w-7xl mx-auto px-6">
                 <SectionTitle>{t("home.testimonialsTitle")}</SectionTitle>
                 <div className="grid md:grid-cols-3 gap-8">

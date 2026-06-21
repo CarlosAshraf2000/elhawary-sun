@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "firebase/auth";
+import { setDoc, doc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import PageLayout from "../components/ui/PageLayout";
 import PageMeta from "../components/seo/PageMeta";
@@ -46,14 +46,16 @@ export default function RegisterPage() {
             if (trimmedName) {
                 await updateProfile(credential.user, { displayName: trimmedName });
             }
-            await addDoc(collection(db, "users"), {
+            await setDoc(doc(db, "users", credential.user.uid), {
                 uid: credential.user.uid,
                 name: trimmedName,
                 email: email.trim().toLowerCase(),
                 createdAt: serverTimestamp(),
             });
+            await sendEmailVerification(credential.user);
         } catch (err) {
             setError(t(getAuthErrorKey(err.code)));
+        } finally {
             setSubmitting(false);
         }
     };

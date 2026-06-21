@@ -18,6 +18,9 @@ const ROUTE_TITLE_KEYS = {
     "/account": "seo.titleAccount",
 };
 
+const NOINDEX_PREFIXES = ["/admin", "/login", "/register", "/account", "/cart", "/checkout"];
+
+/** Fallback route titles when pages don't render Seo directly */
 export default function RoutePageMeta() {
     const { pathname } = useLocation();
     const { t } = useLocale();
@@ -26,8 +29,22 @@ export default function RoutePageMeta() {
         let key = ROUTE_TITLE_KEYS[pathname];
         if (!key && pathname.startsWith("/product/")) key = "seo.titleProduct";
         if (!key && pathname.startsWith("/project/")) key = "seo.titleProject";
-        if (!key && pathname.startsWith("/courses/view")) key = "courses.viewerTitle";
-        document.title = t(key || "seo.defaultTitle");
+        if (!key && pathname.startsWith("/course-viewer")) key = "courses.viewerTitle";
+
+        const noindex = NOINDEX_PREFIXES.some((p) => pathname.startsWith(p));
+        if (noindex) {
+            let robots = document.querySelector('meta[name="robots"]');
+            if (!robots) {
+                robots = document.createElement("meta");
+                robots.setAttribute("name", "robots");
+                document.head.appendChild(robots);
+            }
+            robots.setAttribute("content", "noindex, nofollow");
+        }
+
+        if (key) {
+            document.title = t(key);
+        }
     }, [pathname, t]);
 
     return null;

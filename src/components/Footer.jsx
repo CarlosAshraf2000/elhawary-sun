@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { siteContent } from "../data/siteContent";
+import { isShowcaseMode } from "../config/commerce";
 import { useLocale } from "../hooks/useLocale";
 
 export default function Footer() {
@@ -11,7 +12,7 @@ export default function Footer() {
         ["/services", t("nav.services")],
         ["/projects", t("nav.projects")],
         ["/products", t("nav.products")],
-        ["/cart", t("nav.cart")],
+        ...(!isShowcaseMode() ? [["/cart", t("nav.cart")]] : []),
         ["/quote", t("nav.quote")],
     ];
 

@@ -2,15 +2,19 @@ import { FaSun, FaTools, FaWater } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import PageLayout from "../components/ui/PageLayout";
 import Button from "../components/ui/Button";
-import PageMeta from "../components/seo/PageMeta";
+import Seo from "../components/seo/Seo";
+import Card3D from "../components/ui/Card3D";
+import GlassPanel from "../components/ui/GlassPanel";
+import SiteImage from "../components/ui/SiteImage";
+import SectionTitle from "../components/ui/SectionTitle";
 import { useLocale } from "../hooks/useLocale";
 import { getLocaleData } from "../i18n";
 
-import solarSystemImg from "../assets/services/solar-system.jpg";
-import solarHeaterImg from "../assets/services/solar-water-heater.jpg";
-import maintenanceImg from "../assets/services/solar-maintenance.jpg";
+import solarPanelImg from "../assets/products/solar-panel.jpg";
+import waterHeaterImg from "../assets/products/water-heater.jpg";
+import accessoriesImg from "../assets/products/accessories.jpg";
 
-const serviceImages = [solarSystemImg, solarHeaterImg, maintenanceImg];
+const serviceImages = [solarPanelImg, waterHeaterImg, accessoriesImg];
 const serviceIcons = [FaSun, FaWater, FaTools];
 
 export default function ServicesPage() {
@@ -18,23 +22,26 @@ export default function ServicesPage() {
     const services = getLocaleData(lang).home.services;
 
     return (
-        <PageLayout title={t("services.pageTitle")}>
-            <PageMeta titleKey="services.pageTitle" />
+        <PageLayout title={t("services.pageTitle")} className="mesh-bg dark:bg-surface">
+            <Seo titleKey="services.pageTitle" descriptionKey="seo.defaultDescription" />
+            <SectionTitle>{t("services.pageTitle")}</SectionTitle>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
                 {services.map((service, i) => {
                     const Icon = serviceIcons[i];
                     return (
-                        <div key={service.title} className="bg-white rounded-card shadow-card overflow-hidden">
-                            <img src={serviceImages[i]} alt={service.alt} className="w-full h-56 object-cover" loading="lazy" />
-                            <div className="p-6">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <Icon className="text-gold text-2xl" />
-                                    <h2 className="text-xl font-bold">{service.title}</h2>
+                        <Card3D key={service.title}>
+                            <GlassPanel className="overflow-hidden h-full flex flex-col">
+                                <SiteImage src={serviceImages[i]} alt={service.alt} variant="card" className="!rounded-none min-h-[220px]" />
+                                <div className="p-6 flex-1 flex flex-col">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <Icon className="text-gold text-2xl animate-float" />
+                                        <h2 className="text-xl font-bold dark:text-white">{service.title}</h2>
+                                    </div>
+                                    <p className="text-gray-600 dark:text-gray-300 mb-4 flex-1">{service.description}</p>
+                                    <Button as={Link} to="/quote" className="self-start">{t("nav.quote")}</Button>
                                 </div>
-                                <p className="text-gray-600 mb-4">{service.description}</p>
-                                <Button as={Link} to="/quote">{t("nav.quote")}</Button>
-                            </div>
-                        </div>
+                            </GlassPanel>
+                        </Card3D>
                     );
                 })}
             </div>

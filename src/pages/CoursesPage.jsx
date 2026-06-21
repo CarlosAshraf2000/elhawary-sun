@@ -10,22 +10,29 @@ import { useLocale } from "../hooks/useLocale";
 export default function CoursesPage() {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState("");
     const { t } = useLocale();
 
     useEffect(() => {
         const q = query(collection(db, "courses"), orderBy("createdAt", "desc"));
         const unsub = onSnapshot(q, (snap) => {
             setCourses(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+            setLoadError("");
             setLoading(false);
-        }, () => setLoading(false));
+        }, () => {
+            setLoadError(t("common.loadError"));
+            setLoading(false);
+        });
         return unsub;
-    }, []);
+    }, [t]);
 
     return (
         <PageLayout title={t("courses.title")}>
             <PageMeta titleKey="courses.title" />
             {loading ? (
                 <LoadingSpinner message={t("courses.loading")} />
+            ) : loadError ? (
+                <EmptyState message={loadError} />
             ) : courses.length === 0 ? (
                 <EmptyState message={t("courses.empty")} />
             ) : (

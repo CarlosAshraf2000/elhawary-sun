@@ -1,3 +1,10 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /account
+Disallow: /cart
+Disallow: /checkout
+
 Sitemap: https://elhawary-sun.vercel.app/sitemap.xml

@@ -73,10 +73,10 @@ export default function AdminCoupons() {
     };
 
     return (
-        <div className="p-6" dir={dir}>
+        <div dir={dir}>
             <h1 className="text-3xl font-bold text-gold mb-6">{t("admin.couponsManage")}</h1>
 
-            <form onSubmit={handleSave} className="bg-white p-6 rounded-xl shadow-lg mb-10 space-y-3 max-w-md ml-auto">
+            <form onSubmit={handleSave} className="bg-white p-6 rounded-xl shadow-lg mb-10 space-y-3 w-full grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <h2 className="text-xl font-bold mb-2">{t("admin.addCoupon")}</h2>
                 <input
                     type="text"
@@ -130,8 +130,8 @@ export default function AdminCoupons() {
                 </button>
             </form>
 
-            <div className="bg-white rounded-xl shadow overflow-hidden">
-                <table className="w-full text-center">
+            <div className="overflow-x-auto bg-white rounded-xl shadow overflow-hidden">
+                <table className="w-full text-center min-w-[640px]">
                     <thead className="bg-gray-100">
                         <tr>
                             <th className="p-3 border">{t("admin.code")}</th>
@@ -156,13 +156,15 @@ export default function AdminCoupons() {
                                         {c.active ? t("common.active") : t("common.inactive")}
                                     </span>
                                 </td>
-                                <td className="p-3 flex justify-center gap-2">
+                                <td className="p-3 border">
+                                    <div className="flex justify-center gap-2">
                                     <button onClick={() => toggleActive(c)} className="bg-yellow-500 text-black px-2 py-1 rounded text-sm">
                                         {c.active ? t("admin.toggleInactive") : t("admin.toggleActive")}
                                     </button>
                                     <button onClick={() => deleteCoupon(c.id)} className="bg-red-500 text-white px-2 py-1 rounded text-sm">
                                         {t("common.delete")}
                                     </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

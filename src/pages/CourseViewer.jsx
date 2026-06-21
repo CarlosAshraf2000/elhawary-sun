@@ -1,6 +1,7 @@
 import { useSearchParams, Link } from "react-router-dom";
 import PageLayout from "../components/ui/PageLayout";
 import { useLocale } from "../hooks/useLocale";
+import { isAllowedPdfUrl } from "../utils/validation";
 
 export default function CourseViewer() {
     const [params] = useSearchParams();
@@ -20,6 +21,19 @@ export default function CourseViewer() {
         );
     }
 
+    if (!isAllowedPdfUrl(pdf)) {
+        return (
+            <PageLayout title={t("courses.viewerTitle")}>
+                <p className="text-center text-red-600 mb-6" role="alert">{t("courses.invalidPdf")}</p>
+                <div className="text-center">
+                    <Link to="/courses" className="text-gold font-semibold hover:underline">
+                        {t("courses.backToCourses")}
+                    </Link>
+                </div>
+            </PageLayout>
+        );
+    }
+
     return (
         <PageLayout title={t("courses.viewerTitle")}>
             <iframe
@@ -27,6 +41,7 @@ export default function CourseViewer() {
                 src={pdf}
                 className="w-full min-h-[60vh] md:min-h-[80vh] rounded-card shadow-card"
                 style={{ border: "none" }}
+                sandbox="allow-scripts allow-same-origin"
             />
         </PageLayout>
     );

@@ -13,6 +13,7 @@ import Button from "../components/ui/Button";
 import GlassPanel from "../components/ui/GlassPanel";
 import CartItem from "../components/cart/CartItem";
 import PageMeta from "../components/seo/PageMeta";
+import { isValidName, isValidPhone, isValidAddress } from "../utils/validation";
 
 export default function CheckoutPage() {
     const { items, totalPrice, clearCart } = useCart();
@@ -54,6 +55,20 @@ export default function CheckoutPage() {
         e.preventDefault();
         setError("");
         setWhatsappWarning("");
+
+        if (!isValidName(name)) {
+            setError(t("validation.invalidName"));
+            return;
+        }
+        if (!isValidPhone(phone)) {
+            setError(t("validation.invalidPhone"));
+            return;
+        }
+        if (!isValidAddress(address)) {
+            setError(t("validation.invalidAddress"));
+            return;
+        }
+
         setSubmitting(true);
         const customerInfo = { name, phone, address, notes };
         const couponInfo = appliedCoupon || {};

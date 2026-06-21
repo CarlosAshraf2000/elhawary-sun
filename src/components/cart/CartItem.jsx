@@ -39,7 +39,7 @@ export default function CartItem({ item, compact = false }) {
                     </button>
                 </div>
             </div>
-            <div className="text-left">
+            <div className="text-end">
                 <p className="font-bold text-sm">{formatPriceWithUnit(item.price * item.quantity, priceOpts)}</p>
                 <button type="button" onClick={() => removeItem(item.id)} className="text-red-500 mt-2 hover:text-red-700" aria-label={t("cart.remove")}>
                     <FaTrash className="text-sm" />

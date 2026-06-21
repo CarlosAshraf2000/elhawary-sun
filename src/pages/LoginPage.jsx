@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../firebase";
 import PageLayout from "../components/ui/PageLayout";
 import PageMeta from "../components/seo/PageMeta";
@@ -20,10 +20,11 @@ export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [info, setInfo] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
     if (!loading && user) {
-        return <Navigate to="/account" replace />;
+        return <Navigate to={from} replace />;
     }
 
     const handleSubmit = async (e) => {
@@ -37,6 +38,21 @@ export default function LoginPage() {
             setError(t(getAuthErrorKey(err.code)));
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const handleResetPassword = async () => {
+        setError("");
+        setInfo("");
+        if (!email.trim()) {
+            setError(t("auth.resetPasswordPrompt"));
+            return;
+        }
+        try {
+            await sendPasswordResetEmail(auth, email.trim());
+            setInfo(t("auth.resetPasswordSent"));
+        } catch (err) {
+            setError(t(getAuthErrorKey(err.code)));
         }
     };
 
@@ -77,6 +93,20 @@ export default function LoginPage() {
                         {error}
                     </p>
                 )}
+
+                {info && (
+                    <p role="status" className="text-green-600 text-center text-sm">
+                        {info}
+                    </p>
+                )}
+
+                <button
+                    type="button"
+                    onClick={handleResetPassword}
+                    className="w-full text-sm text-gold font-semibold hover:underline"
+                >
+                    {t("auth.resetPassword")}
+                </button>
 
                 <p className="text-center text-sm text-gray-600 pt-2">
                     {t("auth.noAccount")}{" "}

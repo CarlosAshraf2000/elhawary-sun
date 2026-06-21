@@ -7,6 +7,7 @@ export function getAuthErrorKey(code) {
         "auth/wrong-password": "auth.errors.invalidCredentials",
         "auth/invalid-credential": "auth.errors.invalidCredentials",
         "auth/too-many-requests": "auth.errors.tooManyRequests",
+        "auth/operation-not-allowed": "auth.errors.operationNotAllowed",
     };
     return map[code] || "auth.errors.generic";
 }

@@ -2,10 +2,11 @@ import { useState } from "react";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
-import { isAdminUser } from "../config/admin";
+import { checkIsAdmin } from "../config/admin";
 import FormField from "../components/ui/FormField";
 import Button from "../components/ui/Button";
 import { useLocale } from "../hooks/useLocale";
+import { getAuthErrorKey } from "../utils/authErrors";
 
 export default function AdminLogin() {
     const [email, setEmail] = useState("");
@@ -20,14 +21,15 @@ export default function AdminLogin() {
 
         try {
             const credential = await signInWithEmailAndPassword(auth, email, pass);
-            if (!isAdminUser(credential.user)) {
+            if (!(await checkIsAdmin(credential.user))) {
                 await signOut(auth);
                 setError(t("admin.unauthorized"));
                 return;
             }
+            await credential.user.getIdToken(true);
             navigate("/admin/dashboard");
         } catch (err) {
-            setError(`${t("admin.loginError")}: ${err.code}`);
+            setError(t(getAuthErrorKey(err.code)));
         }
     };
 

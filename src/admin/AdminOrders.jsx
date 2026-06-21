@@ -84,7 +84,7 @@ export default function AdminOrders() {
     };
 
     return (
-        <div className="flex-1 p-10 bg-gray-50 min-h-screen" dir={dir}>
+        <div dir={dir}>
             <h1 className="text-3xl font-bold mb-6 text-gold">{t("admin.ordersTitle")}</h1>
 
             <div className="flex gap-3 mb-5">

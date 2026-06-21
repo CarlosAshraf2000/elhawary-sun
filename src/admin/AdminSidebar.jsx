@@ -2,14 +2,15 @@ import { Link, useLocation as useRouterLocation, useNavigate } from "react-route
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useLocale } from "../hooks/useLocale";
+import { isShowcaseMode } from "../config/commerce";
 
-const navItems = [
+const allNavItems = [
     { to: "/admin/dashboard", labelKey: "admin.dashboard" },
-    { to: "/admin/orders", labelKey: "admin.orders" },
+    { to: "/admin/orders", labelKey: "admin.orders", hideInShowcase: true },
     { to: "/admin/quotes", labelKey: "admin.quotes" },
     { to: "/admin/products", labelKey: "admin.products" },
     { to: "/admin/promotions", labelKey: "admin.promotions" },
-    { to: "/admin/coupons", labelKey: "admin.coupons" },
+    { to: "/admin/coupons", labelKey: "admin.coupons", hideInShowcase: true },
     { to: "/admin/projects", labelKey: "admin.projects" },
     { to: "/admin/courses", labelKey: "admin.courses" },
 ];
@@ -18,6 +19,9 @@ export default function AdminSidebar({ open = false, onClose, onNavigate }) {
     const { pathname } = useRouterLocation();
     const navigate = useNavigate();
     const { t, lang, setLang, dir } = useLocale();
+    const navItems = isShowcaseMode()
+        ? allNavItems.filter((item) => !item.hideInShowcase)
+        : allNavItems;
 
     const handleLogout = async () => {
         await signOut(auth);

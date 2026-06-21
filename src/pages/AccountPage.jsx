@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { signOut } from "firebase/auth";
+import { signOut, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../firebase";
 import PageLayout from "../components/ui/PageLayout";
 import PageMeta from "../components/seo/PageMeta";
@@ -7,10 +8,13 @@ import Button from "../components/ui/Button";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import { useLocale } from "../hooks/useLocale";
 import { useAuth } from "../hooks/useAuth";
+import { getAuthErrorKey } from "../utils/authErrors";
 
 export default function AccountPage() {
     const { t } = useLocale();
     const { user, loading } = useAuth();
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
 
     if (loading) {
         return <LoadingSpinner />;
@@ -22,6 +26,17 @@ export default function AccountPage() {
 
     const handleLogout = async () => {
         await signOut(auth);
+    };
+
+    const handleResetPassword = async () => {
+        setMessage("");
+        setError("");
+        try {
+            await sendPasswordResetEmail(auth, user.email);
+            setMessage(t("auth.resetPasswordSent"));
+        } catch (err) {
+            setError(t(getAuthErrorKey(err.code)));
+        }
     };
 
     const displayName = user.displayName || user.email;
@@ -37,9 +52,14 @@ export default function AccountPage() {
                         {user.email}
                     </p>
                 )}
+                <Button type="button" variant="outline" className="w-full" onClick={handleResetPassword}>
+                    {t("auth.resetPassword")}
+                </Button>
                 <Button type="button" variant="outline" className="w-full" onClick={handleLogout}>
                     {t("auth.logout")}
                 </Button>
+                {message && <p role="status" className="text-green-600 text-sm">{message}</p>}
+                {error && <p role="alert" className="text-red-600 text-sm">{error}</p>}
             </div>
         </PageLayout>
     );

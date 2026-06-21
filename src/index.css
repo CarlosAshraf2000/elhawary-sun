@@ -4,6 +4,20 @@
 
 body {
     font-family: 'Cairo', sans-serif;
+    @apply bg-white text-dark transition-colors duration-300;
+}
+
+html.dark body {
+    @apply bg-surface text-gray-100;
+}
+
+.promo-swiper .swiper-pagination-bullet {
+    background: #D4A017;
+    opacity: 0.5;
+}
+.promo-swiper .swiper-pagination-bullet-active {
+    opacity: 1;
+    transform: scale(1.2);
 }
 
 body.font-arabic {

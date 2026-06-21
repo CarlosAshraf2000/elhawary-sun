@@ -6,11 +6,11 @@ import GlassPanel from "./ui/GlassPanel";
 import { useLocale } from "../hooks/useLocale";
 import { getLocaleData } from "../i18n";
 
-import solarSystemImg from "../assets/services/solar-system.jpg";
-import solarHeaterImg from "../assets/services/solar-water-heater.jpg";
-import maintenanceImg from "../assets/services/solar-maintenance.jpg";
+import solarPanelImg from "../assets/products/solar-panel.jpg";
+import waterHeaterImg from "../assets/products/water-heater.jpg";
+import accessoriesImg from "../assets/products/accessories.jpg";
 
-const serviceImages = [solarSystemImg, solarHeaterImg, maintenanceImg];
+const serviceImages = [solarPanelImg, waterHeaterImg, accessoriesImg];
 const serviceIcons = [FaSun, FaWater, FaTools];
 
 export default function Services() {

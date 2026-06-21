@@ -19,7 +19,7 @@ vi.mock("firebase/auth", () => ({
 }));
 
 vi.mock("../config/admin", () => ({
-    isAdminUser: (user) => user?.email === "admin@test.com",
+    checkIsAdmin: vi.fn(async (user) => user?.email === "admin@test.com"),
 }));
 
 describe("ProtectedAdminRoute", () => {

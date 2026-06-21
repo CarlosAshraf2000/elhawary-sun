@@ -13,9 +13,11 @@ import AdminPromotions from "./AdminPromotions.jsx";
 import AdminCoupons from "./AdminCoupons.jsx";
 
 import ProtectedAdminRoute from "../components/ProtectedAdminRoute.jsx";
+import { ToastProvider } from "../components/ui/Toast.jsx";
 
 export default function AdminRoutes() {
     return (
+        <ToastProvider>
         <Routes>
 
             {/* لو كتب /admin من غير حاجة → يروح للوغن */}
@@ -121,5 +123,6 @@ export default function AdminRoutes() {
             />
 
         </Routes>
+        </ToastProvider>
     );
 }

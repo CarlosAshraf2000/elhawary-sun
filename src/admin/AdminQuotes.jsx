@@ -46,7 +46,7 @@ export default function AdminQuotes() {
     };
 
     return (
-        <div className="flex-1 p-10 bg-gray-50 min-h-screen" dir={dir}>
+        <div dir={dir}>
             <h1 className="text-3xl font-bold mb-6 text-gold">📨 {t("admin.quotesPageTitle")}</h1>
 
             <div className="flex gap-3 mb-5">
@@ -101,7 +101,8 @@ export default function AdminQuotes() {
                                     )}
                                 </td>
 
-                                <td className="p-3 border flex justify-center gap-2">
+                                <td className="p-3 border">
+                                    <div className="flex justify-center gap-2">
                                     {!q.done && (
                                         <button
                                             onClick={() => markDone(q.id)}
@@ -117,6 +118,7 @@ export default function AdminQuotes() {
                                     >
                                         {t("common.delete")}
                                     </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

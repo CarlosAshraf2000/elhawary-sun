@@ -1,0 +1,26 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdminByEmail() {
+      return request.auth != null
+        && request.auth.token.email is string
+        && (
+          request.auth.token.email.matches('(?i)^elhawarysun@gmail.com$')
+          || request.auth.token.email.matches('(?i)^karlosashraf80@gmail.com$')
+        );
+    }
+
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.admin == true ||
+        isAdminByEmail()
+      );
+    }
+
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

@@ -128,10 +128,10 @@ export default function AdminPromotions() {
     const placementLabel = (id) => t(PLACEMENT_KEYS[id] || id);
 
     return (
-        <div className="p-6" dir={dir}>
+        <div dir={dir}>
             <h1 className="text-3xl font-bold text-gold mb-6">{t("admin.promotionsManage")}</h1>
 
-            <form onSubmit={handleSave} className="bg-white p-6 rounded-xl shadow-lg mb-10 space-y-3 max-w-lg ml-auto">
+            <form onSubmit={handleSave} className="bg-white p-6 rounded-xl shadow-lg mb-10 space-y-3 w-full grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <h2 className="text-xl font-bold mb-2">
                     {editBanner ? t("admin.editPromotion") : t("admin.addPromotion")}
                 </h2>

@@ -128,12 +128,12 @@ export default function AdminProjects() {
     };
 
     return (
-        <div className="flex-1 p-10 bg-gray-50 min-h-screen" dir={dir}>
+        <div dir={dir}>
             <h1 className="text-3xl font-bold mb-6 text-gold">📸 {t("admin.projectsManage")}</h1>
 
             <form
                 onSubmit={addProject}
-                className="bg-white p-5 shadow rounded-xl mb-10 max-w-xl"
+                className="bg-white p-5 shadow rounded-xl mb-10 w-full grid md:grid-cols-2 lg:grid-cols-3 gap-4"
             >
                 <h2 className="text-xl font-bold mb-4">{t("admin.addProject")}</h2>
 

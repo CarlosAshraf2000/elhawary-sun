@@ -1,13 +1,7 @@
-import { db } from "../firebase";
-import {
-    collection,
-    query,
-    where,
-    getDocs,
-    doc,
-    updateDoc,
-    increment,
-} from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "../firebase";
+
+const validateCouponCallable = httpsCallable(functions, "validateCoupon");
 
 export function validateCouponData(coupon, subtotal) {
     if (!coupon) {
@@ -54,30 +48,12 @@ export function validateCouponData(coupon, subtotal) {
     };
 }
 
-export async function fetchCouponByCode(code) {
-    const normalized = code.trim().toUpperCase();
-    if (!normalized) return null;
-
-    const q = query(collection(db, "coupons"), where("code", "==", normalized));
-    const snap = await getDocs(q);
-    if (snap.empty) return null;
-    const d = snap.docs[0];
-    return { id: d.id, ...d.data() };
-}
-
 export async function validateCoupon(code, subtotal) {
     try {
-        const coupon = await fetchCouponByCode(code);
-        return validateCouponData(coupon, subtotal);
+        const { data } = await validateCouponCallable({ code, subtotal });
+        return data;
     } catch (err) {
         console.error(err);
         return { valid: false, discount: 0, message: "تعذر التحقق من الكود" };
     }
-}
-
-export async function applyCouponToOrder(couponId) {
-    if (!couponId) return;
-    await updateDoc(doc(db, "coupons", couponId), {
-        usedCount: increment(1),
-    });
 }

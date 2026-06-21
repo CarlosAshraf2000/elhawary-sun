@@ -23,10 +23,14 @@ export default function AdminCourses() {
 
     useEffect(() => {
         const q = query(collection(db, "courses"), orderBy("createdAt", "desc"));
-        const unsub = onSnapshot(q, (snap) => {
-            const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-            setCourses(data);
-        });
+        const unsub = onSnapshot(
+            q,
+            (snap) => {
+                const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+                setCourses(data);
+            },
+            (err) => console.error(err)
+        );
         return () => unsub();
     }, []);
 
@@ -70,12 +74,12 @@ export default function AdminCourses() {
     };
 
     return (
-        <div className="flex-1 p-10" dir={dir}>
+        <div dir={dir}>
             <h1 className="text-3xl font-bold text-gold mb-6">📚 {t("admin.coursesManage")}</h1>
 
             <form
                 onSubmit={handleSubmit}
-                className="bg-white p-6 rounded-xl shadow-md space-y-4 max-w-xl"
+                className="bg-white p-6 rounded-xl shadow-md space-y-4 w-full grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10"
             >
                 <input
                     type="text"

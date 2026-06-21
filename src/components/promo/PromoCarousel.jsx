@@ -6,8 +6,30 @@ import SiteImage from "../ui/SiteImage";
 import GlassPanel from "../ui/GlassPanel";
 import { defaultProduct } from "../../data/productDefaults";
 import { useLocale } from "../../hooks/useLocale";
+import { isExternalLink, isSafeBannerLink } from "../../utils/validation";
 import "swiper/css";
 import "swiper/css/pagination";
+
+function BannerLink({ banner, label }) {
+    const url = banner.linkUrl;
+    const className = "inline-block self-start bg-gold text-black px-6 py-3 rounded-btn font-bold btn-glow";
+
+    if (!isSafeBannerLink(url)) return null;
+
+    if (isExternalLink(url)) {
+        return (
+            <a href={url} target="_blank" rel="noopener noreferrer" className={className}>
+                {label}
+            </a>
+        );
+    }
+
+    return (
+        <Link to={url} className={className}>
+            {label}
+        </Link>
+    );
+}
 
 export default function PromoCarousel({ placement, className = "" }) {
     const { banners, loading } = useBanners(placement);
@@ -38,9 +60,7 @@ export default function PromoCarousel({ placement, className = "" }) {
                                         {banner.title && <h2 className="text-2xl md:text-4xl font-bold text-3d mb-2">{banner.title}</h2>}
                                         {banner.subtitle && <p className="text-lg md:text-xl opacity-95 mb-4 max-w-2xl">{banner.subtitle}</p>}
                                         {banner.linkUrl && (
-                                            <Link to={banner.linkUrl} className="inline-block self-start bg-gold text-black px-6 py-3 rounded-btn font-bold btn-glow">
-                                                {banner.linkText || t("promo.learnMore")}
-                                            </Link>
+                                            <BannerLink banner={banner} label={banner.linkText || t("promo.learnMore")} />
                                         )}
                                     </div>
                                 </div>

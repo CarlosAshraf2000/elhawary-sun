@@ -1,10 +1,21 @@
 import { useState } from "react";
 import AdminSidebar from "./AdminSidebar";
 import { useLocale } from "../hooks/useLocale";
+import { useRefreshAdminToken } from "./useRefreshAdminToken";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
 
 export default function AdminLayout({ children }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { t, dir } = useLocale();
+    const { ready } = useRefreshAdminToken();
+
+    if (!ready) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <LoadingSpinner message={t("admin.loading")} />
+            </div>
+        );
+    }
 
     return (
         <div className="flex min-h-screen" dir={dir}>

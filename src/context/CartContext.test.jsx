@@ -47,4 +47,39 @@ describe("CartContext", () => {
 
         expect(result.current.items).toHaveLength(0);
     });
+
+    it("does not add out-of-stock product", () => {
+        const { result } = renderHook(() => useCart(), { wrapper });
+        const outOfStock = { ...p1, stock: 0 };
+
+        act(() => {
+            result.current.addItem(outOfStock, 1);
+        });
+
+        expect(result.current.items).toHaveLength(0);
+    });
+
+    it("does not exceed available stock", () => {
+        const { result } = renderHook(() => useCart(), { wrapper });
+        const limited = { ...p1, stock: 2 };
+
+        act(() => {
+            result.current.addItem(limited, 2);
+            result.current.addItem(limited, 1);
+        });
+
+        expect(result.current.items[0].quantity).toBe(2);
+    });
+
+    it("does not update quantity beyond stock", () => {
+        const { result } = renderHook(() => useCart(), { wrapper });
+        const limited = { ...p1, stock: 3 };
+
+        act(() => {
+            result.current.addItem(limited, 1);
+            result.current.updateQty("1", 5);
+        });
+
+        expect(result.current.items[0].quantity).toBe(1);
+    });
 });

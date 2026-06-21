@@ -1,9 +1,9 @@
-import { FaCog } from "react-icons/fa";
+import { FaCog, FaMoon, FaSun } from "react-icons/fa";
 import { useLocale } from "../../hooks/useLocale";
 import NavDropdown from "./NavDropdown";
 
 export default function SettingsMenu() {
-    const { lang, currency, setLang, setCurrency, t } = useLocale();
+    const { lang, currency, theme, setLang, setCurrency, setTheme, t } = useLocale();
 
     const itemClass = (active) =>
         `block w-full text-start px-4 py-2 text-sm transition ${
@@ -23,7 +23,16 @@ export default function SettingsMenu() {
                 </button>
             }
         >
-            <div className="px-4 py-2 border-b border-gray-100">
+            <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+                <p className="text-xs font-bold text-gray-500 mb-2">{t("settings.theme")}</p>
+                <button type="button" className={itemClass(theme === "light")} onClick={() => setTheme("light")}>
+                    <FaSun className="inline me-2" /> {t("settings.lightMode")}
+                </button>
+                <button type="button" className={itemClass(theme === "dark")} onClick={() => setTheme("dark")}>
+                    <FaMoon className="inline me-2" /> {t("settings.darkMode")}
+                </button>
+            </div>
+            <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
                 <p className="text-xs font-bold text-gray-500 mb-2">{t("settings.language")}</p>
                 <button type="button" className={itemClass(lang === "ar")} onClick={() => setLang("ar")}>
                     {t("common.langAr")}
