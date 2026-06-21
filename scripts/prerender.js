@@ -9,6 +9,12 @@ const DIST = join(__dirname, "../dist");
 const PORT = 4173;
 const BASE = `http://localhost:${PORT}`;
 
+/** Playwright + preview server are unavailable on Vercel's build image. */
+if (process.env.VERCEL || process.env.SKIP_PRERENDER === "1") {
+    console.log("Skipping prerender (Vercel / SKIP_PRERENDER). SPA build will deploy.");
+    process.exit(0);
+}
+
 const ROUTES = [
     "/",
     "/about",
