@@ -1,4 +1,9 @@
 {
+  "build": {
+    "env": {
+      "VITE_COMMERCE_MODE": "full"
+    }
+  },
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ]
