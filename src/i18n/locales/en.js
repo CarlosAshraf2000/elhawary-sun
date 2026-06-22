@@ -341,6 +341,9 @@ export default {
         backToCourses: "Back to courses",
         viewerIframeTitle: "Course PDF viewer",
         invalidPdf: "This file link is not allowed or invalid.",
+        openPdf: "Open PDF in new tab",
+        pdfEmbedFallback: "Your browser blocked inline preview. Open in a new tab:",
+        pdfViewerHint: "If you see a blank area, enable “Allow delivery of PDF and ZIP files” in Cloudinary Security settings, or use Open PDF.",
     },
     validation: {
         invalidName: "Please enter a valid name (at least 2 characters).",

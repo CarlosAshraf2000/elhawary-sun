@@ -30,6 +30,30 @@ export function getPdfDownloadUrl(url) {
     if (driveId) {
         return `https://drive.google.com/uc?export=download&id=${driveId}`;
     }
+    if (trimmed.includes("res.cloudinary.com") && !trimmed.includes("fl_attachment")) {
+        return trimmed.replace("/upload/", "/upload/fl_attachment/");
+    }
+    return trimmed;
+}
+
+/** URL tuned for in-browser PDF viewing (inline, embeddable). */
+export function getPdfViewerUrl(url) {
+    const trimmed = String(url || "").trim();
+    if (!trimmed) return "";
+
+    const driveId = trimmed.match(/drive\.google\.com\/file\/d\/([^/]+)/)?.[1];
+    if (driveId) {
+        return `https://drive.google.com/file/d/${driveId}/preview`;
+    }
+
+    if (!isAllowedPdfUrl(trimmed)) {
+        return "";
+    }
+
+    if (trimmed.includes("res.cloudinary.com") && !trimmed.includes("fl_attachment:inline")) {
+        return trimmed.replace("/upload/", "/upload/fl_attachment:inline/");
+    }
+
     return trimmed;
 }
 

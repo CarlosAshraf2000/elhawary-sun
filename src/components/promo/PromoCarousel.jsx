@@ -99,14 +99,14 @@ export default function PromoCarousel({ placement, className = "" }) {
 
     const count = banners.length;
     const canRotate = count > 1;
-    const useLoop = count >= 3;
-    const useRewind = count === 2;
     const swiperKey = `${placement}-${banners.map((b) => b.id).join("-")}`;
 
     useEffect(() => {
         const swiper = swiperRef.current;
-        if (!swiper || !canRotate) return;
-        swiper.autoplay?.start?.();
+        if (!swiper?.autoplay || !canRotate) return;
+        if (!swiper.autoplay.running) {
+            swiper.autoplay.start();
+        }
     }, [swiperKey, canRotate]);
 
     if (loading || banners.length === 0) return null;
@@ -121,15 +121,12 @@ export default function PromoCarousel({ placement, className = "" }) {
                     onSwiper={(swiper) => {
                         swiperRef.current = swiper;
                     }}
-                    onAutoplayStop={(swiper) => {
-                        if (canRotate) swiper.autoplay?.start?.();
-                    }}
                     slidesPerView={1}
                     spaceBetween={0}
                     speed={700}
                     observer
                     observeParents
-                    watchOverflow={false}
+                    rewind={canRotate}
                     pagination={{ clickable: true, dynamicBullets: canRotate }}
                     autoplay={
                         canRotate
@@ -138,13 +135,9 @@ export default function PromoCarousel({ placement, className = "" }) {
                                   disableOnInteraction: false,
                                   pauseOnMouseEnter: true,
                                   stopOnLastSlide: false,
-                                  waitForTransition: true,
                               }
                             : false
                     }
-                    loop={useLoop}
-                    loopAdditionalSlides={useLoop ? count : 0}
-                    rewind={useRewind}
                     className="promo-swiper rounded-card overflow-hidden"
                 >
                     {banners.map((banner) => (

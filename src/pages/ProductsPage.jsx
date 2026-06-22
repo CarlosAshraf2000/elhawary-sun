@@ -25,6 +25,7 @@ import Pagination from "../components/ui/Pagination";
 import FloatingShapes from "../components/ui/FloatingShapes";
 
 import PromoCarousel from "../components/promo/PromoCarousel";
+import QuietErrorBoundary from "../components/ui/QuietErrorBoundary";
 
 import PageMeta from "../components/seo/PageMeta";
 
@@ -168,7 +169,9 @@ export default function ProductsPage() {
 
 
 
-            <PromoCarousel placement="products_top" className="mesh-bg" />
+            <QuietErrorBoundary>
+                <PromoCarousel placement="products_top" className="mesh-bg" />
+            </QuietErrorBoundary>
 
 
 

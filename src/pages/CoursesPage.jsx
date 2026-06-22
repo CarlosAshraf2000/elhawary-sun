@@ -6,7 +6,9 @@ import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import PageLayout from "../components/ui/PageLayout";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import EmptyState from "../components/ui/EmptyState";
+import Button from "../components/ui/Button";
 import PageMeta from "../components/seo/PageMeta";
+import { useLocale } from "../hooks/useLocale";
 import { getPdfDownloadUrl } from "../utils/validation";
 
 export default function CoursesPage() {

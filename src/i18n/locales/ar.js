@@ -341,6 +341,9 @@ export default {
         backToCourses: "العودة إلى الكورسات",
         viewerIframeTitle: "عرض ملف الكورس",
         invalidPdf: "رابط الملف غير مسموح أو غير صالح.",
+        openPdf: "فتح PDF في تبويب جديد",
+        pdfEmbedFallback: "المتصفح منع عرض الملف هنا. افتحه في تبويب جديد:",
+        pdfViewerHint: "لو ظهرت صفحة فارغة، فعّل «Allow delivery of PDF and ZIP files» في إعدادات Cloudinary أو استخدم زر فتح PDF.",
     },
     validation: {
         invalidName: "يرجى إدخال اسم صحيح (حرفان على الأقل).",
