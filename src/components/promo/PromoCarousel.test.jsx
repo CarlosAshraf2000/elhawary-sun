@@ -10,31 +10,51 @@ vi.mock("../../hooks/usePromotions", () => ({
 
 import { useBanners } from "../../hooks/usePromotions";
 
+function renderCarousel(placement = "home_hero") {
+    return render(
+        <MemoryRouter>
+            <LocaleProvider>
+                <PromoCarousel placement={placement} />
+            </LocaleProvider>
+        </MemoryRouter>
+    );
+}
+
 describe("PromoCarousel", () => {
     it("renders nothing when no banners", () => {
         useBanners.mockReturnValue({ banners: [], loading: false });
-        const { container } = render(
-            <MemoryRouter>
-                <LocaleProvider>
-                    <PromoCarousel placement="home_hero" />
-                </LocaleProvider>
-            </MemoryRouter>
-        );
+        const { container } = renderCarousel();
         expect(container.firstChild).toBeNull();
     });
 
-    it("renders active banner title", () => {
+    it("renders active banner title and subtitle", () => {
         useBanners.mockReturnValue({
             banners: [{ id: "1", title: "عرض الصيف", subtitle: "خصم 20%", linkUrl: "/products" }],
             loading: false,
         });
-        render(
-            <MemoryRouter>
-                <LocaleProvider>
-                    <PromoCarousel placement="home_hero" />
-                </LocaleProvider>
-            </MemoryRouter>
-        );
+        renderCarousel();
         expect(screen.getByText("عرض الصيف")).toBeInTheDocument();
+        expect(screen.getByText("خصم 20%")).toBeInTheDocument();
+    });
+
+    it("links entire banner to WhatsApp when link is whatsapp", () => {
+        useBanners.mockReturnValue({
+            banners: [{ id: "1", title: "عرض", subtitle: "", linkUrl: "whatsapp" }],
+            loading: false,
+        });
+        renderCarousel();
+        const link = screen.getByRole("link", { name: /عرض/i });
+        expect(link).toHaveAttribute("href", "https://wa.me/201001993667");
+        expect(link).toHaveAttribute("target", "_blank");
+    });
+
+    it("renders internal link for relative paths", () => {
+        useBanners.mockReturnValue({
+            banners: [{ id: "1", title: "عرض", linkUrl: "/quote" }],
+            loading: false,
+        });
+        renderCarousel();
+        const link = screen.getByRole("link", { name: /عرض/i });
+        expect(link).toHaveAttribute("href", "/quote");
     });
 });

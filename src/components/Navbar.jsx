@@ -5,11 +5,11 @@ import { isShowcaseMode } from "../config/commerce";
 import CartButton from "./cart/CartButton";
 import CartDrawer from "./cart/CartDrawer";
 import ProductsMegaMenu from "./nav/ProductsMegaMenu";
+import MobileNavDrawer from "./nav/MobileNavDrawer";
 import SettingsMenu from "./nav/SettingsMenu";
 import ProfileMenu from "./nav/ProfileMenu";
 import { useLocale } from "../hooks/useLocale";
 import { useAuth } from "../hooks/useAuth";
-import { CATEGORY_IDS } from "../data/productDefaults";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 
@@ -97,52 +97,18 @@ export default function Navbar() {
 
             {!showcase && <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />}
 
-            <div
-                role="dialog"
-                aria-modal="true"
-                aria-label={t("nav.mobileNav")}
+            <MobileNavDrawer
+                open={open}
+                onClose={() => setOpen(false)}
                 dir={dir}
-                className={`fixed top-0 ${dir === "rtl" ? "right-0 translate-x-full" : "left-0 -translate-x-full"} h-full w-64 max-w-[85vw] glass-drawer text-white shadow-3d-lg transform transition-transform duration-300 z-[60] ${
-                    open ? "!translate-x-0" : ""
-                }`}
-            >
-                <div className="p-6 flex flex-col gap-4 text-lg font-semibold">
-                    <button type="button" className="text-3xl self-end" onClick={() => setOpen(false)} aria-label={t("nav.closeMenu")}>✕</button>
-                    <Link to="/" onClick={() => setOpen(false)} className="hover:text-gold">{t("nav.home")}</Link>
-                    <Link to="/products" onClick={() => setOpen(false)} className="hover:text-gold">{t("nav.products")}</Link>
-                    {CATEGORY_IDS.map((id) => (
-                        <Link key={id} to={`/products?category=${id}`} onClick={() => setOpen(false)} className="hover:text-gold text-base ps-4">
-                            {t(`categories.${id}`)}
-                        </Link>
-                    ))}
-                    {navLinks.slice(1).map((link) => (
-                        <Link key={link.to} to={link.to} onClick={() => setOpen(false)} className="hover:text-gold">{link.label}</Link>
-                    ))}
-                    {profileLinks.map((link) =>
-                        link.action === "logout" ? (
-                            <button
-                                key="logout"
-                                type="button"
-                                onClick={async () => {
-                                    await signOut(auth);
-                                    setOpen(false);
-                                }}
-                                className="hover:text-gold text-start"
-                            >
-                                {link.label}
-                            </button>
-                        ) : (
-                            <Link key={link.to} to={link.to} onClick={() => setOpen(false)} className="hover:text-gold">
-                                {link.label}
-                            </Link>
-                        )
-                    )}
-                </div>
-            </div>
-
-            {open && (
-                <button type="button" className="fixed inset-0 bg-black/40 z-[55] lg:hidden" onClick={() => setOpen(false)} aria-label={t("nav.closeMenu")} />
-            )}
+                t={t}
+                navLinks={navLinks}
+                profileLinks={profileLinks}
+                onLogout={async () => {
+                    await signOut(auth);
+                    setOpen(false);
+                }}
+            />
         </>
     );
 }

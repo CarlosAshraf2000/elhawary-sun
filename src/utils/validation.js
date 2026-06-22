@@ -3,7 +3,35 @@ const ALLOWED_PDF_HOSTS = [
     "ibb.co",
     "firebasestorage.googleapis.com",
     "storage.googleapis.com",
+    "res.cloudinary.com",
+    "drive.google.com",
+    "docs.google.com",
 ];
+
+export function normalizePdfUrl(url) {
+    const trimmed = String(url || "").trim();
+    if (!trimmed) throw new Error("PDF_URL_EMPTY");
+
+    const driveId = trimmed.match(/drive\.google\.com\/file\/d\/([^/]+)/)?.[1];
+    if (driveId) {
+        return `https://drive.google.com/file/d/${driveId}/preview`;
+    }
+
+    if (!isAllowedPdfUrl(trimmed)) {
+        throw new Error("PDF_URL_INVALID");
+    }
+
+    return trimmed;
+}
+
+export function getPdfDownloadUrl(url) {
+    const trimmed = String(url || "").trim();
+    const driveId = trimmed.match(/drive\.google\.com\/file\/d\/([^/]+)/)?.[1];
+    if (driveId) {
+        return `https://drive.google.com/uc?export=download&id=${driveId}`;
+    }
+    return trimmed;
+}
 
 export function isAllowedPdfUrl(url) {
     try {

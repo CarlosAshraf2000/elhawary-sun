@@ -1,5 +1,6 @@
 import { httpsCallable } from "firebase/functions";
-import { functions } from "../firebase";
+import { collection, query, where, limit, getDocs } from "firebase/firestore";
+import { functions, db } from "../firebase";
 
 const validateCouponCallable = httpsCallable(functions, "validateCoupon");
 
@@ -48,12 +49,38 @@ export function validateCouponData(coupon, subtotal) {
     };
 }
 
+export async function validateCouponDirect(code, subtotal) {
+    const normalized = String(code || "").trim().toUpperCase();
+    if (!normalized) {
+        return { valid: false, discount: 0, message: "كود الخصم غير صالح" };
+    }
+
+    try {
+        const q = query(
+            collection(db, "coupons"),
+            where("code", "==", normalized),
+            limit(1)
+        );
+        const snap = await getDocs(q);
+        if (snap.empty) {
+            return { valid: false, discount: 0, message: "كود الخصم غير صالح" };
+        }
+
+        const docSnap = snap.docs[0];
+        const coupon = { id: docSnap.id, ...docSnap.data() };
+        return validateCouponData(coupon, subtotal);
+    } catch (err) {
+        console.error(err);
+        return { valid: false, discount: 0, message: "تعذر التحقق من الكود" };
+    }
+}
+
 export async function validateCoupon(code, subtotal) {
     try {
         const { data } = await validateCouponCallable({ code, subtotal });
         return data;
     } catch (err) {
-        console.error(err);
-        return { valid: false, discount: 0, message: "تعذر التحقق من الكود" };
+        console.warn("Coupon function unavailable, validating via Firestore:", err);
+        return validateCouponDirect(code, subtotal);
     }
 }

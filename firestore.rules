@@ -44,13 +44,42 @@ service cloud.firestore {
     }
 
     match /coupons/{couponId} {
-      allow read: if isAdmin();
-      allow write: if isAdmin();
+      allow read: if resource.data.active == true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (
+        resource.data.active == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedCount'])
+        && request.resource.data.usedCount == resource.data.get('usedCount', 0) + 1
+      );
+    }
+
+    function isValidCartOrder() {
+      let d = request.resource.data;
+      return d.keys().hasAll([
+          'name', 'phone', 'address', 'items', 'subtotal', 'discount', 'total',
+          'itemCount', 'productCount', 'source', 'done', 'status'
+        ])
+        && d.name is string && d.name.size() >= 2 && d.name.size() <= 100
+        && d.phone is string && d.phone.size() >= 10 && d.phone.size() <= 20
+        && d.address is string && d.address.size() >= 5 && d.address.size() <= 300
+        && d.items is list && d.items.size() > 0 && d.items.size() <= 30
+        && d.subtotal is number && d.subtotal >= 0 && d.subtotal <= 100000000
+        && d.discount is number && d.discount >= 0 && d.discount <= d.subtotal
+        && d.total is number && d.total >= 0 && d.total == d.subtotal - d.discount
+        && d.itemCount is number && d.itemCount >= 1
+        && d.productCount is number && d.productCount >= 1
+        && d.source == 'cart'
+        && d.done == false
+        && d.status == 'new'
+        && (!('notes' in d) || (d.notes is string && d.notes.size() <= 500))
+        && (!('couponCode' in d) || d.couponCode == null || d.couponCode is string)
+        && (!('couponId' in d) || d.couponId == null || d.couponId is string);
     }
 
     match /orders/{orderId} {
       allow read: if isAdmin();
-      allow create, update, delete: if false;
+      allow create: if isValidCartOrder();
+      allow update, delete: if isAdmin();
     }
 
     match /quotes/{quoteId} {

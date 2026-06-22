@@ -41,7 +41,7 @@ export default function CourseViewer() {
                 src={pdf}
                 className="w-full min-h-[60vh] md:min-h-[80vh] rounded-card shadow-card"
                 style={{ border: "none" }}
-                sandbox="allow-scripts allow-same-origin"
+                sandbox="allow-scripts allow-same-origin allow-popups"
             />
         </PageLayout>
     );

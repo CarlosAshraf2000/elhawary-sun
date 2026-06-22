@@ -12,8 +12,20 @@ import {
     orderBy,
 } from "firebase/firestore";
 import { BANNER_PLACEMENTS } from "../data/promotions";
+import { siteContent } from "../data/siteContent";
 import { uploadImageToImgbb } from "../utils/upload";
 import { useLocale } from "../hooks/useLocale";
+import {
+    AdminPageHeader,
+    AdminForm,
+    AdminInput,
+    AdminSelect,
+    AdminFileInput,
+    AdminCheckbox,
+    AdminDateInput,
+    AdminPrimaryButton,
+    AdminSecondaryButton,
+} from "./ui/AdminFields";
 
 const PLACEMENT_KEYS = {
     home_hero: "admin.placementHomeHero",
@@ -21,9 +33,16 @@ const PLACEMENT_KEYS = {
     products_top: "admin.placementProductsTop",
 };
 
+const PLACEMENT_HINTS = {
+    home_hero: "admin.placementHomeHeroHint",
+    home_mid: "admin.placementHomeMidHint",
+    products_top: "admin.placementProductsTopHint",
+};
+
 export default function AdminPromotions() {
     const { t, dir } = useLocale();
     const [banners, setBanners] = useState([]);
+    const [loadError, setLoadError] = useState("");
     const [editBanner, setEditBanner] = useState(null);
     const [title, setTitle] = useState("");
     const [subtitle, setSubtitle] = useState("");
@@ -39,11 +58,19 @@ export default function AdminPromotions() {
 
     useEffect(() => {
         const q = query(collection(db, "banners"), orderBy("priority", "desc"));
-        const unsub = onSnapshot(q, (snap) => {
-            setBanners(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-        });
+        const unsub = onSnapshot(
+            q,
+            (snap) => {
+                setBanners(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+                setLoadError("");
+            },
+            (err) => {
+                console.error(err);
+                setLoadError(t("admin.promotionsLoadError"));
+            }
+        );
         return unsub;
-    }, []);
+    }, [t]);
 
     const resetForm = () => {
         setEditBanner(null);
@@ -72,6 +99,7 @@ export default function AdminPromotions() {
         setStartsAt(b.startsAt ? formatDateInput(b.startsAt) : "");
         setEndsAt(b.endsAt ? formatDateInput(b.endsAt) : "");
         setImageFile(null);
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const handleSave = async (e) => {
@@ -83,11 +111,11 @@ export default function AdminPromotions() {
                 imageUrl = await uploadImageToImgbb(imageFile);
             }
 
-            const defaultLinkText = t("common.learnMore");
+            const defaultLinkText = t("promo.whatsappCta");
             const payload = {
                 title: title.trim(),
                 subtitle: subtitle.trim(),
-                linkUrl: linkUrl.trim(),
+                linkUrl: linkUrl.trim() || "whatsapp",
                 linkText: linkText.trim() || defaultLinkText,
                 placement,
                 priority: Number(priority) || 0,
@@ -108,10 +136,13 @@ export default function AdminPromotions() {
                     createdAt: serverTimestamp(),
                 });
             }
+
+            alert(t("admin.promoSaved"));
             resetForm();
         } catch (err) {
             console.error(err);
             alert(t("admin.saveError"));
+        } finally {
             setUploading(false);
         }
     };
@@ -129,131 +160,153 @@ export default function AdminPromotions() {
 
     return (
         <div dir={dir}>
-            <h1 className="text-3xl font-bold text-gold mb-6">{t("admin.promotionsManage")}</h1>
+            <AdminPageHeader title={t("admin.promotionsManage")} icon="📢" />
 
-            <form onSubmit={handleSave} className="bg-white p-6 rounded-xl shadow-lg mb-10 space-y-3 w-full grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <h2 className="text-xl font-bold mb-2">
-                    {editBanner ? t("admin.editPromotion") : t("admin.addPromotion")}
-                </h2>
+            {loadError && (
+                <p role="alert" className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200">
+                    {loadError}
+                </p>
+            )}
 
-                <input
-                    type="text"
-                    placeholder={t("admin.promoTitle")}
-                    className="w-full p-3 border rounded"
+            <AdminForm
+                title={editBanner ? t("admin.editPromotion") : t("admin.addPromotion")}
+                onSubmit={handleSave}
+                actions={
+                    <>
+                        <AdminPrimaryButton disabled={uploading}>
+                            {uploading ? t("admin.saving") : t("common.save")}
+                        </AdminPrimaryButton>
+                        {editBanner && (
+                            <AdminSecondaryButton onClick={resetForm}>
+                                {t("admin.cancelEdit")}
+                            </AdminSecondaryButton>
+                        )}
+                    </>
+                }
+            >
+                <AdminInput
+                    label={t("admin.promoTitle")}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
+                    placeholder={t("admin.promoTitle")}
                 />
-                <input
-                    type="text"
-                    placeholder={t("admin.promoSubtitle")}
-                    className="w-full p-3 border rounded"
+                <AdminInput
+                    label={t("admin.promoSubtitle")}
                     value={subtitle}
                     onChange={(e) => setSubtitle(e.target.value)}
+                    placeholder={t("admin.promoSubtitle")}
                 />
-                <input
-                    type="text"
-                    placeholder={t("admin.promoLinkPlaceholder")}
-                    className="w-full p-3 border rounded"
+                <AdminInput
+                    label={t("admin.promoLink")}
+                    hint={t("admin.promoLinkHint")}
                     value={linkUrl}
                     onChange={(e) => setLinkUrl(e.target.value)}
+                    placeholder={t("admin.promoLinkPlaceholder")}
                 />
-                <input
-                    type="text"
-                    placeholder={t("admin.promoLinkText")}
-                    className="w-full p-3 border rounded"
+                <div className="flex flex-wrap items-center gap-2 -mt-2 mb-2">
+                    <AdminSecondaryButton
+                        type="button"
+                        onClick={() => {
+                            setLinkUrl("whatsapp");
+                            if (!linkText.trim()) setLinkText(t("promo.whatsappCta"));
+                        }}
+                    >
+                        {t("admin.promoUseWhatsApp")}
+                    </AdminSecondaryButton>
+                    <span className="text-xs text-gray-500" dir="ltr">
+                        {siteContent.social.whatsapp}
+                    </span>
+                </div>
+                <AdminInput
+                    label={t("admin.promoLinkText")}
                     value={linkText}
                     onChange={(e) => setLinkText(e.target.value)}
+                    placeholder={t("promo.learnMore")}
                 />
-                <select
-                    className="w-full p-3 border rounded"
+                <AdminSelect
+                    label={t("admin.placement")}
+                    hint={t(PLACEMENT_HINTS[placement])}
                     value={placement}
                     onChange={(e) => setPlacement(e.target.value)}
                 >
                     {BANNER_PLACEMENTS.map((p) => (
                         <option key={p.id} value={p.id}>{placementLabel(p.id)}</option>
                     ))}
-                </select>
-                <input
+                </AdminSelect>
+                <AdminInput
+                    label={t("admin.priority")}
+                    hint={t("admin.priorityHint")}
                     type="number"
-                    placeholder={t("admin.priorityHint")}
-                    className="w-full p-3 border rounded"
                     value={priority}
                     onChange={(e) => setPriority(e.target.value)}
                 />
-                <div className="flex gap-4">
-                    <label className="flex items-center gap-2">
-                        <input type="date" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} />
-                        <span className="text-sm">{t("admin.startsAt")}</span>
-                    </label>
-                    <label className="flex items-center gap-2">
-                        <input type="date" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} />
-                        <span className="text-sm">{t("admin.endsAt")}</span>
-                    </label>
-                </div>
-                <label className="flex items-center gap-2">
-                    <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
-                    <span>{t("common.active")}</span>
-                </label>
-                <label className="block text-sm text-gray-600">
-                    {t("admin.image")}
-                    <input
-                        type="file"
-                        className="w-full p-2 mt-1"
-                        onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                        accept="image/*"
-                    />
-                </label>
-                <button
-                    type="submit"
-                    className="bg-gray-600 text-white w-full py-2 rounded font-bold disabled:opacity-60"
-                    disabled={uploading}
-                >
-                    {uploading ? t("admin.saving") : t("common.save")}
-                </button>
-                {editBanner && (
-                    <button type="button" className="w-full py-2 rounded font-bold border" onClick={resetForm}>
-                        {t("admin.cancelEdit")}
-                    </button>
-                )}
-            </form>
+                <AdminDateInput
+                    label={t("admin.startsAt")}
+                    value={startsAt}
+                    onChange={(e) => setStartsAt(e.target.value)}
+                />
+                <AdminDateInput
+                    label={t("admin.endsAt")}
+                    value={endsAt}
+                    onChange={(e) => setEndsAt(e.target.value)}
+                />
+                <AdminCheckbox
+                    label={t("common.active")}
+                    checked={active}
+                    onChange={(e) => setActive(e.target.checked)}
+                />
+                <AdminFileInput
+                    label={t("admin.image")}
+                    hint={editBanner ? t("admin.imageOptionalEdit") : t("admin.imageRecommended")}
+                    accept="image/*"
+                    fileName={imageFile?.name}
+                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                    span={2}
+                />
+            </AdminForm>
 
             <div className="grid md:grid-cols-2 gap-6">
                 {banners.map((b) => (
-                    <div key={b.id} className="bg-white rounded-xl shadow overflow-hidden">
-                        <div className="h-40 bg-gray-100 overflow-hidden">
+                    <div key={b.id} className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                        <div className="h-44 bg-gray-100 overflow-hidden">
                             {b.imageUrl ? (
                                 <img src={b.imageUrl} alt={b.title} className="w-full h-full object-cover" />
                             ) : (
-                                <div className="h-full flex items-center justify-center text-gray-400">{t("admin.noImage")}</div>
+                                <div className="h-full flex items-center justify-center text-gray-400 bg-gradient-to-br from-gold/20 to-gray-200">
+                                    {t("admin.noImage")}
+                                </div>
                             )}
                         </div>
                         <div className="p-4">
-                            <div className="flex justify-between items-start mb-2">
+                            <div className="flex justify-between items-start gap-2 mb-2">
                                 <h3 className="font-bold text-lg">{b.title}</h3>
-                                <span className={`text-xs px-2 py-1 rounded ${b.active ? "bg-green-100 text-green-700" : "bg-gray-100"}`}>
+                                <span className={`text-xs px-2 py-1 rounded-full shrink-0 ${b.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
                                     {b.active ? t("common.active") : t("common.inactive")}
                                 </span>
                             </div>
-                            <p className="text-sm text-gray-600">{b.subtitle}</p>
-                            <p className="text-xs text-gray-500 mt-1">
-                                {placementLabel(b.placement)}
-                            </p>
-                            <div className="flex flex-wrap gap-2 mt-3">
-                                <button onClick={() => startEdit(b)} className="bg-blue-500 text-white px-3 py-1 rounded text-sm">
+                            {b.subtitle && <p className="text-sm text-gray-600">{b.subtitle}</p>}
+                            <p className="text-xs text-gold font-semibold mt-2">{placementLabel(b.placement)}</p>
+                            {b.linkUrl && (
+                                <p className="text-xs text-gray-500 mt-1 truncate" dir="ltr">{b.linkUrl}</p>
+                            )}
+                            <div className="flex flex-wrap gap-2 mt-4">
+                                <button type="button" onClick={() => startEdit(b)} className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold">
                                     {t("common.edit")}
                                 </button>
-                                <button onClick={() => toggleActive(b)} className="bg-yellow-500 text-black px-3 py-1 rounded text-sm">
+                                <button type="button" onClick={() => toggleActive(b)} className="bg-amber-400 hover:bg-amber-500 text-black px-3 py-1.5 rounded-lg text-sm font-semibold">
                                     {b.active ? t("admin.toggleInactive") : t("admin.toggleActive")}
                                 </button>
-                                <button onClick={() => deleteBanner(b.id)} className="bg-red-500 text-white px-3 py-1 rounded text-sm">
+                                <button type="button" onClick={() => deleteBanner(b.id)} className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold">
                                     {t("common.delete")}
                                 </button>
                             </div>
                         </div>
                     </div>
                 ))}
-                {banners.length === 0 && <p className="text-gray-600">{t("admin.noPromotions")}</p>}
+                {banners.length === 0 && !loadError && (
+                    <p className="text-gray-600 md:col-span-2">{t("admin.noPromotions")}</p>
+                )}
             </div>
         </div>
     );

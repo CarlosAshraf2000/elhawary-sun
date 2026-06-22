@@ -14,6 +14,18 @@ import {
 import { CATEGORY_IDS, getProductImage, isOnSale, getCategoryLabel } from "../data/productDefaults";
 import { uploadImageToImgbb } from "../utils/upload";
 import { useLocale } from "../hooks/useLocale";
+import {
+    AdminPageHeader,
+    AdminForm,
+    AdminInput,
+    AdminTextarea,
+    AdminSelect,
+    AdminFileInput,
+    AdminCheckbox,
+    AdminDateInput,
+    AdminPrimaryButton,
+    AdminSecondaryButton,
+} from "./ui/AdminFields";
 
 export default function AdminProducts() {
     const { t, dir } = useLocale();
@@ -147,176 +159,56 @@ export default function AdminProducts() {
 
     return (
         <div dir={dir}>
-            <h1 className="text-3xl font-bold text-gold mb-6">{t("admin.productsManage")}</h1>
+            <AdminPageHeader title={t("admin.productsManage")} icon="📦" />
 
-            <form
+            <AdminForm
+                title={editProduct ? t("admin.editProduct") : t("admin.addProduct")}
                 onSubmit={handleSave}
-                className="bg-white p-6 rounded-xl shadow-lg mb-10 space-y-3 w-full grid md:grid-cols-2 lg:grid-cols-3 gap-4"
+                actions={
+                    <>
+                        <AdminPrimaryButton disabled={uploading}>
+                            {uploading ? t("admin.uploadingSaving") : t("common.save")}
+                        </AdminPrimaryButton>
+                        {editProduct && (
+                            <AdminSecondaryButton onClick={resetForm}>
+                                {t("admin.cancelEdit")}
+                            </AdminSecondaryButton>
+                        )}
+                    </>
+                }
             >
-                <h2 className="text-xl font-bold mb-2">
-                    {editProduct ? t("admin.editProduct") : t("admin.addProduct")}
-                </h2>
-
-                <input
-                    type="text"
-                    placeholder={t("admin.productName")}
-                    className="w-full p-3 border rounded"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
+                <AdminInput label={t("admin.productName")} value={title} onChange={(e) => setTitle(e.target.value)} required />
+                <AdminInput label={t("admin.brand")} value={brand} onChange={(e) => setBrand(e.target.value)} />
+                <AdminInput label={t("admin.model")} value={model} onChange={(e) => setModel(e.target.value)} />
+                <AdminInput label={t("admin.price")} type="number" value={price} onChange={(e) => setPrice(e.target.value)} required />
+                <AdminInput label={t("admin.requestPrice")} type="number" value={requestPrice} onChange={(e) => setRequestPrice(e.target.value)} />
+                <AdminInput label={t("admin.salePrice")} type="number" value={salePrice} onChange={(e) => setSalePrice(e.target.value)} />
+                <AdminDateInput label={t("admin.promoEnds")} value={promoEndsAt} onChange={(e) => setPromoEndsAt(e.target.value)} />
+                <AdminSelect label={t("admin.category")} value={category} onChange={(e) => setCategory(e.target.value)}>
+                    {CATEGORY_IDS.map((id) => (
+                        <option key={id} value={id}>{t(`categories.${id}`)}</option>
+                    ))}
+                </AdminSelect>
+                <AdminInput label={t("admin.stock")} type="number" value={stock} onChange={(e) => setStock(e.target.value)} />
+                <AdminCheckbox label={t("admin.soldOut")} checked={soldOut} onChange={(e) => setSoldOut(e.target.checked)} />
+                <AdminInput label={t("admin.powerKw")} type="number" value={powerKw} onChange={(e) => setPowerKw(e.target.value)} />
+                <AdminInput label={t("admin.powerKva")} type="number" value={powerKva} onChange={(e) => setPowerKva(e.target.value)} />
+                <AdminSelect label={t("admin.loadType")} value={loadType} onChange={(e) => setLoadType(e.target.value)}>
+                    <option value="">{t("admin.loadTypeNone")}</option>
+                    <option value="single">{t("shop.loadSingle")}</option>
+                    <option value="three">{t("shop.loadThree")}</option>
+                </AdminSelect>
+                <AdminInput label={t("admin.country")} value={countryOfOrigin} onChange={(e) => setCountryOfOrigin(e.target.value)} />
+                <AdminCheckbox label={t("admin.featured")} checked={featured} onChange={(e) => setFeatured(e.target.checked)} />
+                <AdminTextarea label={t("admin.description")} value={desc} onChange={(e) => setDesc(e.target.value)} rows={3} span={2} required />
+                <AdminFileInput
+                    label={t("admin.image")}
+                    accept="image/*"
+                    fileName={imageFile?.name}
+                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                    span={2}
                 />
-
-                <input
-                    type="text"
-                    placeholder={t("admin.brand")}
-                    className="w-full p-3 border rounded"
-                    value={brand}
-                    onChange={(e) => setBrand(e.target.value)}
-                />
-
-                <input
-                    type="text"
-                    placeholder={t("admin.model")}
-                    className="w-full p-3 border rounded"
-                    value={model}
-                    onChange={(e) => setModel(e.target.value)}
-                />
-
-                <input
-                    type="number"
-                    placeholder={t("admin.price")}
-                    className="w-full p-3 border rounded"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    required
-                />
-
-                <input
-                    type="number"
-                    placeholder={t("admin.requestPrice")}
-                    className="w-full p-3 border rounded"
-                    value={requestPrice}
-                    onChange={(e) => setRequestPrice(e.target.value)}
-                />
-
-                <input
-                    type="number"
-                    placeholder={t("admin.salePrice")}
-                    className="w-full p-3 border rounded"
-                    value={salePrice}
-                    onChange={(e) => setSalePrice(e.target.value)}
-                />
-
-                <label className="block text-sm text-gray-600">
-                    {t("admin.promoEnds")}
-                    <input
-                        type="date"
-                        className="w-full p-3 border rounded mt-1"
-                        value={promoEndsAt}
-                        onChange={(e) => setPromoEndsAt(e.target.value)}
-                    />
-                </label>
-
-                <label className="block text-sm text-gray-600">
-                    {t("admin.category")}
-                    <select
-                        className="w-full p-3 border rounded mt-1"
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                    >
-                        {CATEGORY_IDS.map((id) => (
-                            <option key={id} value={id}>{t(`categories.${id}`)}</option>
-                        ))}
-                    </select>
-                </label>
-
-                <input
-                    type="number"
-                    placeholder={t("admin.stock")}
-                    className="w-full p-3 border rounded"
-                    value={stock}
-                    onChange={(e) => setStock(e.target.value)}
-                />
-
-                <label className="flex items-center gap-2">
-                    <input type="checkbox" checked={soldOut} onChange={(e) => setSoldOut(e.target.checked)} />
-                    <span>{t("admin.soldOut")}</span>
-                </label>
-
-                <input
-                    type="number"
-                    placeholder={t("admin.powerKw")}
-                    className="w-full p-3 border rounded"
-                    value={powerKw}
-                    onChange={(e) => setPowerKw(e.target.value)}
-                />
-
-                <input
-                    type="number"
-                    placeholder={t("admin.powerKva")}
-                    className="w-full p-3 border rounded"
-                    value={powerKva}
-                    onChange={(e) => setPowerKva(e.target.value)}
-                />
-
-                <label className="block text-sm text-gray-600">
-                    {t("admin.loadType")}
-                    <select
-                        className="w-full p-3 border rounded mt-1"
-                        value={loadType}
-                        onChange={(e) => setLoadType(e.target.value)}
-                    >
-                        <option value="">{t("admin.loadTypeNone")}</option>
-                        <option value="single">{t("shop.loadSingle")}</option>
-                        <option value="three">{t("shop.loadThree")}</option>
-                    </select>
-                </label>
-
-                <input
-                    type="text"
-                    placeholder={t("admin.country")}
-                    className="w-full p-3 border rounded"
-                    value={countryOfOrigin}
-                    onChange={(e) => setCountryOfOrigin(e.target.value)}
-                />
-
-                <label className="flex items-center gap-2">
-                    <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} />
-                    <span>{t("admin.featured")}</span>
-                </label>
-
-                <textarea
-                    placeholder={t("admin.description")}
-                    className="w-full p-3 border rounded"
-                    value={desc}
-                    onChange={(e) => setDesc(e.target.value)}
-                    rows={3}
-                    required
-                />
-
-                <label className="block text-sm text-gray-600">
-                    {t("admin.image")}
-                    <input
-                        type="file"
-                        className="w-full p-2 mt-1"
-                        onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                        accept="image/*"
-                    />
-                </label>
-
-                <button
-                    className="bg-gray-600 text-white w-full py-2 rounded font-bold disabled:opacity-60"
-                    disabled={uploading}
-                >
-                    {uploading ? t("admin.uploadingSaving") : t("common.save")}
-                </button>
-
-                {editProduct && (
-                    <button type="button" className="w-full py-2 rounded font-bold border mt-2" onClick={resetForm}>
-                        {t("admin.cancelEdit")}
-                    </button>
-                )}
-            </form>
+            </AdminForm>
 
             <div className="grid md:grid-cols-2 gap-8">
                 {products.map((p) => (
