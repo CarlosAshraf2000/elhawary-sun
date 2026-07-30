@@ -1,5 +1,5 @@
 import SectionTitle from "../components/ui/SectionTitle";
-import PageMeta from "../components/seo/PageMeta";
+import Seo from "../components/seo/Seo";
 import { useLocale } from "../hooks/useLocale";
 import { getLocaleData } from "../i18n";
 
@@ -9,7 +9,7 @@ export default function AboutPage() {
 
     return (
         <section className="min-h-screen mesh-bg py-16 md:py-24 px-6">
-            <PageMeta titleKey="about.title" />
+            <Seo titleKey="seo.titleAbout" descriptionKey="seo.descAbout" />
             <div className="max-w-5xl mx-auto">
                 <div className="glass-card-light p-8 md:p-12 text-center mb-12 animate-fadeIn">
                     <div className="flex justify-center mb-4">

@@ -1,7 +1,7 @@
 import { FaPhoneAlt, FaWhatsapp, FaMapMarkerAlt, FaEnvelope } from "react-icons/fa";
 import { siteContent } from "../data/siteContent";
 import PageLayout from "../components/ui/PageLayout";
-import PageMeta from "../components/seo/PageMeta";
+import Seo from "../components/seo/Seo";
 import { useLocale } from "../hooks/useLocale";
 
 export default function ContactPage() {
@@ -10,7 +10,10 @@ export default function ContactPage() {
 
     return (
         <PageLayout title={t("contact.title")}>
-            <PageMeta titleKey="contact.title" />
+            <Seo titleKey="seo.titleContact" descriptionKey="seo.descContact" />
+            <p className="max-w-3xl mx-auto text-center text-gray-700 text-lg leading-relaxed mb-10">
+                {t("contact.intro")}
+            </p>
             <div className="max-w-3xl mx-auto glass-card-light p-8 md:p-10 mb-12">
                 <div className="space-y-8 text-xl font-semibold text-gray-800">
                     <p className="flex items-center gap-3 flex-wrap">

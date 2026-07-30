@@ -6,7 +6,6 @@ import Seo from "../components/seo/Seo";
 import Card3D from "../components/ui/Card3D";
 import GlassPanel from "../components/ui/GlassPanel";
 import SiteImage from "../components/ui/SiteImage";
-import SectionTitle from "../components/ui/SectionTitle";
 import { useLocale } from "../hooks/useLocale";
 import { getLocaleData } from "../i18n";
 
@@ -23,8 +22,10 @@ export default function ServicesPage() {
 
     return (
         <PageLayout title={t("services.pageTitle")} className="mesh-bg dark:bg-surface">
-            <Seo titleKey="services.pageTitle" descriptionKey="seo.defaultDescription" />
-            <SectionTitle>{t("services.pageTitle")}</SectionTitle>
+            <Seo titleKey="seo.titleServices" descriptionKey="seo.descServices" />
+            <p className="max-w-3xl mx-auto text-center text-gray-700 dark:text-gray-300 text-lg leading-relaxed mb-10">
+                {t("services.intro")}
+            </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
                 {services.map((service, i) => {
                     const Icon = serviceIcons[i];

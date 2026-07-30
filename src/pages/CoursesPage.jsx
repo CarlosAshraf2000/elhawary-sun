@@ -7,7 +7,7 @@ import PageLayout from "../components/ui/PageLayout";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import EmptyState from "../components/ui/EmptyState";
 import Button from "../components/ui/Button";
-import PageMeta from "../components/seo/PageMeta";
+import Seo from "../components/seo/Seo";
 import { useLocale } from "../hooks/useLocale";
 import { getPdfDownloadUrl } from "../utils/validation";
 
@@ -32,7 +32,10 @@ export default function CoursesPage() {
 
     return (
         <PageLayout title={t("courses.title")}>
-            <PageMeta titleKey="courses.title" />
+            <Seo titleKey="seo.titleCourses" descriptionKey="seo.descCourses" />
+            <p className="max-w-3xl mx-auto text-center text-gray-700 text-lg leading-relaxed mb-10">
+                {t("courses.intro")}
+            </p>
             {loading ? (
                 <LoadingSpinner message={t("courses.loading")} />
             ) : loadError ? (

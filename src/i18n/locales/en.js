@@ -58,6 +58,13 @@ export default {
         titleAccount: "My account | Elhawary Sun",
         titleProduct: "Product Details | Elhawary Sun",
         titleProject: "Project Details | Elhawary Sun",
+        descAbout: "Learn about Elhawary Sun — our vision and mission for solar supply, installation and maintenance in Egypt.",
+        descServices: "Solar station design and installation, solar water heaters, and technical maintenance support.",
+        descProjects: "Browse Elhawary Sun solar and heater projects for homes, factories and farms.",
+        descContact: "Contact Elhawary Sun in Minya by phone, WhatsApp or email for install and service requests.",
+        descQuote: "Request a free quote for a solar system or solar water heater from Elhawary Sun via WhatsApp.",
+        descCourses: "Educational solar energy courses from Elhawary Sun covering systems, installation and maintenance.",
+        descProducts: "Browse solar panels, inverters, batteries, heaters and accessories from Elhawary Sun.",
     },
     nav: {
         home: "Home",
@@ -203,9 +210,11 @@ export default {
     },
     services: {
         pageTitle: "Our services",
+        intro: "We offer end-to-end solar services: station design and installation, solar water heaters, and technical maintenance for homes, factories and farms across Egypt.",
     },
     projects: {
         pageTitle: "Our projects",
+        intro: "Browse completed solar station and solar water heater projects for residential, industrial and agricultural clients — delivered with quality, safety and clear specifications.",
         loading: "Loading projects…",
         empty: "No projects to display at the moment.",
         notFound: "Project not found",
@@ -308,6 +317,7 @@ export default {
     },
     contact: {
         title: "Contact us",
+        intro: "We welcome questions about solar supply, installation and maintenance in Minya and across Egypt. Reach us by phone, WhatsApp or email, or find us on the map below.",
         phone: "Phone",
         whatsapp: "WhatsApp",
         address: "Address",
@@ -316,6 +326,7 @@ export default {
     },
     quote: {
         title: "Request a quote",
+        intro: "Send your details and the system you need for a quote on a solar station or solar water heater. We open WhatsApp with a ready message so our team can follow up quickly.",
         success: "Request sent successfully!",
         successDetail: "WhatsApp should open now with your message ready. Confirm send in the WhatsApp app.",
         saveFailed: "WhatsApp opened, but the request could not be saved in the system.",
@@ -332,6 +343,7 @@ export default {
     },
     courses: {
         title: "Educational courses",
+        intro: "Educational materials on solar energy to help you understand systems, safe installation and maintenance, with viewable and downloadable files.",
         loading: "Loading courses…",
         empty: "No courses available at the moment.",
         viewCourse: "View course",

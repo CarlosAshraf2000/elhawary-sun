@@ -5,6 +5,8 @@
       "VITE_SITE_URL": "https://www.elhawarysun.com"
     }
   },
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
     { "source": "/((?!sitemap\\.xml$|robots\\.txt$).*)", "destination": "/" }
   ]

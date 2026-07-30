@@ -8,7 +8,7 @@ import EmptyState from "../components/ui/EmptyState";
 import Card3D from "../components/ui/Card3D";
 import GlassPanel from "../components/ui/GlassPanel";
 import SiteImage from "../components/ui/SiteImage";
-import PageMeta from "../components/seo/PageMeta";
+import Seo from "../components/seo/Seo";
 import { useLocale } from "../hooks/useLocale";
 import { truncateDescription } from "../utils/text";
 
@@ -27,7 +27,10 @@ export default function ProjectsPage() {
 
     return (
         <PageLayout title={t("projects.pageTitle")} className="mesh-bg">
-            <PageMeta titleKey="projects.pageTitle" />
+            <Seo titleKey="seo.titleProjects" descriptionKey="seo.descProjects" />
+            <p className="max-w-3xl mx-auto text-center text-gray-700 text-lg leading-relaxed mb-10">
+                {t("projects.intro")}
+            </p>
             {loading ? (
                 <LoadingSpinner message={t("projects.loading")} />
             ) : projects.length === 0 ? (

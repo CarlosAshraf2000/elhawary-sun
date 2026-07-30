@@ -27,7 +27,7 @@ import FloatingShapes from "../components/ui/FloatingShapes";
 import PromoCarousel from "../components/promo/PromoCarousel";
 import QuietErrorBoundary from "../components/ui/QuietErrorBoundary";
 
-import PageMeta from "../components/seo/PageMeta";
+import Seo from "../components/seo/Seo";
 
 import { useLocale } from "../hooks/useLocale";
 
@@ -109,7 +109,7 @@ export default function ProductsPage() {
 
         <div>
 
-            <PageMeta titleKey="shop.storeTitle" descriptionKey="seo.defaultDescription" />
+            <Seo titleKey="seo.titleProducts" descriptionKey="seo.descProducts" />
 
             <section className="relative py-20 mesh-bg overflow-hidden">
 
