@@ -7,4 +7,4 @@ Disallow: /account
 Disallow: /cart
 Disallow: /checkout
 
-Sitemap: https://elhawarysun.com/sitemap.xml
+Sitemap: https://www.elhawarysun.com/sitemap.xml

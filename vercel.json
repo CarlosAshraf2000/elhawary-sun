@@ -2,7 +2,7 @@
   "build": {
     "env": {
       "VITE_COMMERCE_MODE": "full",
-      "VITE_SITE_URL": "https://elhawarysun.com"
+      "VITE_SITE_URL": "https://www.elhawarysun.com"
     }
   },
   "rewrites": [

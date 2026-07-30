@@ -7,7 +7,8 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const SITE_URL = (process.env.VITE_SITE_URL || "https://elhawarysun.com").replace(/\/$/, "");
+// Prefer www: apex TLS currently serves a cert with SAN=www only (name mismatch).
+const SITE_URL = (process.env.VITE_SITE_URL || "https://www.elhawarysun.com").replace(/\/$/, "");
 
 const STATIC_ROUTES = [
     { path: "/", priority: "1.0", changefreq: "weekly" },

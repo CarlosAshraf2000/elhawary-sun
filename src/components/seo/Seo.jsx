@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useLocale } from "../../hooks/useLocale";
 
-const SITE_URL = import.meta.env.VITE_SITE_URL || "https://elhawarysun.com";
+const SITE_URL = import.meta.env.VITE_SITE_URL || "https://www.elhawarysun.com";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/icon.png`;
 
 function upsertMeta(attr, key, content) {
