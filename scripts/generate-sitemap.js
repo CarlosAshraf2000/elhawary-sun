@@ -1,5 +1,5 @@
 /**
- * Generates sitemap.xml at build time.
+ * Generates sitemap.xml + robots.txt at build time.
  * Run: node scripts/generate-sitemap.js
  */
 import { writeFileSync } from "node:fs";
@@ -7,7 +7,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const SITE_URL = process.env.VITE_SITE_URL || "https://elhawary-sun.vercel.app";
+const SITE_URL = (process.env.VITE_SITE_URL || "https://elhawarysun.com").replace(/\/$/, "");
 
 const STATIC_ROUTES = [
     { path: "/", priority: "1.0", changefreq: "weekly" },
@@ -39,5 +39,19 @@ ${urls}
 </urlset>
 `;
 
-writeFileSync(join(__dirname, "../public/sitemap.xml"), sitemap, "utf8");
-console.log("Generated public/sitemap.xml with", STATIC_ROUTES.length, "URLs");
+const robots = `User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /account
+Disallow: /cart
+Disallow: /checkout
+
+Sitemap: ${SITE_URL}/sitemap.xml
+`;
+
+const publicDir = join(__dirname, "../public");
+writeFileSync(join(publicDir, "sitemap.xml"), sitemap, "utf8");
+writeFileSync(join(publicDir, "robots.txt"), robots, "utf8");
+console.log("Generated public/sitemap.xml + robots.txt for", SITE_URL, `(${STATIC_ROUTES.length} URLs)`);
